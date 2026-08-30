@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>dev.sandbox</groupId>
+  <artifactId>kafka-microservices-lab</artifactId>
+  <version>0.1.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>Kafka Microservices Lab</name>
+  <description>
+    Personal/team learning sandbox for distributed-systems and microservices patterns
+    (Outbox, CQRS, SAGA, DLQ, Gateway, etc.) over Kafka + Spring Boot. See
+    sandbox-context-document.md for the full architectural rationale and
+    implementation-roadmap.md for the milestone sequencing (M0-M10).
+  </description>
+
+  <!--
+    M0: only the two scaffolding modules exist. Service modules (order-service,
+    payment-service, inventory-service, command-api, query-api, notification-service,
+    batch-ingestion-service, api-gateway) are added incrementally starting M2, per
+    the roadmap - not pre-created here as empty shells.
+  -->
+  <modules>
+    <module>sandbox-arch-rules</module>
+    <module>sandbox-avro-schemas</module>
+  </modules>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>21</maven.compiler.release>
+
+    <!-- Shared dependency versions - single source of truth for every module -->
+    <spring-boot.version>3.3.4</spring-boot.version>
+    <spring-cloud.version>2023.0.3</spring-cloud.version>
+    <avro.version>1.11.3</avro.version>
+    <confluent.version>7.7.0</confluent.version>
+    <archunit.version>1.3.0</archunit.version>
+    <testcontainers.version>1.20.1</testcontainers.version>
+    <resilience4j.version>2.2.0</resilience4j.version>
+    <opentelemetry-instrumentation.version>2.7.0</opentelemetry-instrumentation.version>
+    <logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
+
+    <!-- Confluent packages (kafka-avro-serializer, kafka-schema-registry-client)
+         live in Confluent's repo, not Maven Central - required from M1 onward,
+         declared here so every module inherits it without redeclaring. -->
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>confluent</id>
+      <url>https://packages.confluent.io/maven/</url>
+    </repository>
+  </repositories>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Spring Boot BOM - brings web/actuator/validation/data-jpa/data-mongodb/
+           data-redis/batch/mail versions in line for every future service module -->
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!-- Spring Cloud BOM - Gateway + LoadBalancer, needed from M6 -->
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-dependencies</artifactId>
+        <version>${spring-cloud.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!-- Testcontainers BOM - postgresql/mongodb/kafka modules, needed from M3 -->
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-bom</artifactId>
+        <version>${testcontainers.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!-- Resilience4j BOM - circuit breaker/retry, needed from M5 -->
+      <dependency>
+        <groupId>io.github.resilience4j</groupId>
+        <artifactId>resilience4j-bom</artifactId>
+        <version>${resilience4j.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!-- Avro codegen runtime - used starting this milestone (sandbox-avro-schemas) -->
+      <dependency>
+        <groupId>org.apache.avro</groupId>
+        <artifactId>avro</artifactId>
+        <version>${avro.version}</version>
+      </dependency>
+
+      <!-- Confluent Avro serializer + Schema Registry client - needed from M1 -->
+      <dependency>
+        <groupId>io.confluent</groupId>
+        <artifactId>kafka-avro-serializer</artifactId>
+        <version>${confluent.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.confluent</groupId>
+        <artifactId>kafka-schema-registry-client</artifactId>
+        <version>${confluent.version}</version>
+      </dependency>
+
+      <!-- ArchUnit - used starting this milestone (sandbox-arch-rules) -->
+      <dependency>
+        <groupId>com.tngtech.archunit</groupId>
+        <artifactId>archunit-junit5</artifactId>
+        <version>${archunit.version}</version>
+      </dependency>
+
+      <!-- Structured JSON logging routed through the OTLP pipe - needed from M9 -->
+      <dependency>
+        <groupId>net.logstash.logback</groupId>
+        <artifactId>logstash-logback-encoder</artifactId>
+        <version>${logstash-logback-encoder.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.avro</groupId>
+          <artifactId>avro-maven-plugin</artifactId>
+          <version>${avro.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.springframework.boot</groupId>
+          <artifactId>spring-boot-maven-plugin</artifactId>
+          <version>${spring-boot.version}</version>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>

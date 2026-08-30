@@ -1,0 +1,10 @@
+{
+  "type": "record",
+  "name": "DummyPing",
+  "namespace": "dev.sandbox.avro",
+  "doc": "M0 placeholder schema - only exists to prove avro-maven-plugin codegen works before any real business event schema exists. Delete once OrderCreated.avsc lands in M1.",
+  "fields": [
+    { "name": "message", "type": "string", "default": "pong" },
+    { "name": "sentAtEpochMillis", "type": "long" }
+  ]
+}

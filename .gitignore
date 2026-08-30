@@ -1,0 +1,16 @@
+# Maven build output
+target/
+
+# Local secrets/values - never commit, .env.example is the committed template
+.env
+
+# Per-developer local compose tweaks, auto-merged by Compose - never committed
+docker-compose.override.yml
+
+# IDE noise
+.idea/
+*.iml
+.vscode/
+
+# OS noise
+.DS_Store

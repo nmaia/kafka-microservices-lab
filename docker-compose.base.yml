@@ -1,0 +1,14 @@
+# Base compose file - the foundation every overlay builds on.
+#
+# M0: intentionally empty. Filled in starting M1 with the always-on
+# infrastructure: 1 Kafka broker (KRaft), Schema Registry, Kafka UI, Redis,
+# and the API Gateway. Overlays (docker-compose.multibroker.yml,
+# docker-compose.outbox.yml, docker-compose.cqrs.yml, docker-compose.saga.yml,
+# docker-compose.integrations.yml, docker-compose.observability.yml) are added
+# in their respective milestones and run alongside this file, e.g.:
+#   docker compose -f docker-compose.base.yml -f docker-compose.outbox.yml up
+#
+# docker-compose.override.yml (gitignored) is auto-merged by Compose for
+# per-developer local tweaks and should never be committed.
+
+services: {}
