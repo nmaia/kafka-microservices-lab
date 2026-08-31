@@ -1,0 +1,30 @@
+{
+  "type": "record",
+  "name": "OrderCreated",
+  "namespace": "dev.sandbox.avro",
+  "doc": "Emitted when an order is created. Wire event for cross-service consumption (payment, inventory, read models) - distinct from the internal domain event.",
+  "fields": [
+    { "name": "orderId", "type": "string" },
+    { "name": "customerId", "type": "string" },
+    {
+      "name": "totalAmount",
+      "type": { "type": "bytes", "logicalType": "decimal", "precision": 10, "scale": 2 }
+    },
+    { "name": "currency", "type": "string", "default": "USD" },
+    {
+      "name": "items",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "OrderItem",
+          "fields": [
+            { "name": "sku", "type": "string" },
+            { "name": "quantity", "type": "int" }
+          ]
+        }
+      }
+    },
+    { "name": "createdAt", "type": "long" }
+  ]
+}
