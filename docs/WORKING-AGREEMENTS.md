@@ -33,3 +33,15 @@ verified, before moving to the next milestone:
     - Update the "Next up" line
     - Add any newly-discovered gotchas to the "Known gotchas" section
 3. Commit both together, e.g. `git commit -m "docs: M<n> summary + checklist update"`
+
+## Using Claude Code (or any AI assistant) on this repo
+- Claude Code reads project files directly, but doesn't automatically
+  prioritize `docs/` over raw code state when reasoning about status — it can
+  infer "what milestone are we on" from code artifacts alone and get it
+  wrong (e.g., missing a verification step that's recorded in a milestone
+  doc but not evident from the code itself).
+- **Start a new Claude Code session by asking it to read
+  `docs/CONTEXT-CHECKLIST.md` first**, rather than assuming it'll find its
+  way there. Once it has read the relevant docs, it reasons from them
+  correctly — the gap is in reaching for them unprompted, not in
+  understanding them.

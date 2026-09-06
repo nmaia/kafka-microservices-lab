@@ -49,5 +49,11 @@ touch infra wiring.
 | `docker-compose.base.yml` + overlays | Yes | Shared infra/service topology |
 | `docker-compose.override.yml` | No (gitignored) | Your local tweaks, auto-merged by Compose |
 
+## Optional: Claude Code (AI assistant) setup
+
+If you want to use Claude Code inside IntelliJ for this project, see
+[`docs/CLAUDE-CODE-SETUP.md`](./docs/CLAUDE-CODE-SETUP.md) for the full
+walkthrough, including known Node/npm upgrade issues on Windows.
+
 This file gets updated whenever a milestone introduces a new class of
 configuration - not just a new variable name.
