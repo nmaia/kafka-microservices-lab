@@ -5,7 +5,7 @@ How this project gets built, session to session — not what's been built (see
 
 ## Pairing style
 - Work step-by-step: one concept or one step explained at a time.
-- The developer (Natanael) types and runs every command themselves, in their
+- The developer types and runs every command themselves, in their
   own terminal/IDE — not handed finished files to drop in, except for M0's
   initial scaffold (a deliberate one-time exception, agreed before M1 started).
 - Move to the next step only once the current one is confirmed working
