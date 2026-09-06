@@ -94,3 +94,30 @@ What Maven modules exist in this project?
 A correct, specific answer (naming your actual modules) confirms it's
 reading the live project through the IDE connection, not just generating
 plausible text.
+
+## Starting a session (every time, after setup is done)
+
+1. Open IntelliJ, with this project (`kafka-microservices-lab`) open.
+2. Open the **integrated terminal** (View → Tool Windows → Terminal, or
+   `Alt+F12`), confirm it's sitting in the project root.
+3. Run:
+```powershell
+claude
+```
+4. `CLAUDE.md` is read automatically — no need to re-explain working style
+   or re-paste context each session.
+
+**Resuming a previous conversation** (instead of starting fresh):
+```powershell
+claude -c
+```
+Continues the most recent session in this directory, with its history intact.
+
+**Checking the IDE connection is live**, if something seems off (e.g., it
+doesn't seem to be reading project files correctly):
+```powershell
+/mcp
+```
+Look for `idea` showing `✓ connected`. If it's missing or shows an error,
+this global connection may need re-authenticating — see the "Connecting the
+CLI to IntelliJ" section above.

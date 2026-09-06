@@ -37,6 +37,9 @@ docker compose -f docker-compose.base.yml ps
 docker compose -f docker-compose.base.yml stop
 ```
 
+## Starting a Claude Code session
+See [`docs/CLAUDE-CODE-SETUP.md`](./CLAUDE-CODE-SETUP.md#starting-a-session-every-time-after-setup-is-done) for daily usage (`claude`, `claude -c` to resume, `/mcp` to check the IDE connection).
+
 ## Known gotchas (full detail in the relevant milestone doc)
 - Avro Maven plugin's decimal flag is `enableDecimalLogicalType` — **singular**, no trailing "s".
 - `kafka-avro-console-producer` lives in the `schema-registry` container, not `kafka`.
