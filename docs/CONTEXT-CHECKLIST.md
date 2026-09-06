@@ -4,6 +4,7 @@ Fast-orientation doc for picking this project back up — by you, or another AI
 assistant — without re-reading every milestone doc in full.
 
 ## Reference documents
+- `docs/WORKING-AGREEMENTS.md` — how we work: pairing style, post-milestone documentation process
 - `sandbox-context-document.md` — full architecture rationale & decisions (treat as settled)
 - `implementation-roadmap.md` — milestone-by-milestone plan, M0–M10
 - `docs/milestones/*.md` — what was actually done + troubleshooting, per milestone

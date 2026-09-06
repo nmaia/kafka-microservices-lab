@@ -69,6 +69,7 @@ kafka-microservices-lab/
 ## Documentation
 
 - **[Context Checklist](./docs/CONTEXT-CHECKLIST.md)** — start here. Environment setup, current status, how to run the stack, known gotchas.
+- **[Working Agreements](./docs/WORKING-AGREEMENTS.md)** — how this project gets built: pairing style, and the documentation process followed after every milestone.
 - **[Context Document](./sandbox-context-document.md)** — full architectural rationale: why Hexagonal over VSA, why KRaft, why Spring Cloud Gateway, etc. Settled decisions, not open questions.
 - **[Implementation Roadmap](./implementation-roadmap.md)** — the milestone-by-milestone build plan (M0–M10), with patterns and "definition of done" gates.
 - **[CONFIGURATION.md](./CONFIGURATION.md)** — the env-var-for-values vs. mount-for-structure convention used throughout.
