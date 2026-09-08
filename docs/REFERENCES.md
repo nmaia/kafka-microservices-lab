@@ -74,6 +74,12 @@ well-regarded source offers better or more current thinking than an older
   Kafka-based systems; useful alongside Enterprise Integration Patterns'
   more general messaging vocabulary.
 
+## API Documentation
+- **springdoc-openapi's official documentation (springdoc.org)** — the
+  direct reference for wiring OpenAPI 3 generation, Swagger UI, and Scalar
+  UI into every REST-exposing service, starting with `order-service` in
+  M2. Chosen over the older SpringFox, which is no longer maintained.
+
 ## Change Data Capture
 - **Debezium's official documentation (debezium.io)** — living reference
   for how the Outbox Event Router SMT actually taps the Postgres WAL (M3);

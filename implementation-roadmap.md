@@ -52,10 +52,21 @@ a listed pattern doesn't feel justified by what you're actually building, skip i
 - `OrderRepository` port — in-memory adapter only (no DB yet, keep this milestone small)
 - `CreateOrderUseCase`
 - `OrderController` (REST) → publishes `OrderCreated` Avro event to Kafka
+- **API documentation**: `springdoc-openapi` wired into `order-service`, exposing
+  both Swagger UI and Scalar UI over the same generated OpenAPI 3 spec.
+  Documentation availability is environment-gated
+  (`springdoc.api-docs.enabled`), following `CONFIGURATION.md`'s env-var
+  convention — on for local/dev, off by default for anything resembling
+  prod. This establishes the pattern every future REST-exposing service
+  follows, not just `order-service`.
 - Unit tests for `Order` (no Spring context)
 - First 3–4 ArchUnit rules from `sandbox-arch-rules`: domain has no Spring/adapter dependencies
 
-**Definition of done:** `POST /orders` via curl produces a real Avro message, visible and schema-valid in Kafka UI.
+**Definition of done:** 
+- `POST /orders` via curl produces a real Avro message, visible and schema-valid in Kafka UI.
+- Both `/swagger-ui.html` and `/scalar` render the live OpenAPI spec for
+    `order-service`'s endpoints, and toggling `springdoc.api-docs.enabled=false`
+    actually disables both.
 
 | Pattern | Why here |
 |---|---|

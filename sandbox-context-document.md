@@ -242,6 +242,25 @@ Explicitly **excluded**: Singleton (Spring container handles lifecycle), forced
 Builder everywhere, Decorator wrapped around Resilience4j (it already implements
 that pattern internally — redundant to re-wrap).
 
+### 4.5 API documentation
+
+Every service exposing a REST API uses **springdoc-openapi**, generating an
+OpenAPI 3 spec from controllers/DTOs/Bean Validation annotations at
+runtime — chosen over the older SpringFox (effectively dead since 2020,
+incompatible with Spring Boot 3.x). Both **Swagger UI** and **Scalar UI**
+are exposed over the same generated spec, giving a choice of renderer
+without maintaining two separate doc pipelines.
+
+Doc availability is **environment-gated**, not always-on: enabled for
+local/dev, disabled by default for anything resembling production
+(`springdoc.api-docs.enabled=false`, which also takes the UI down since it
+depends on that same spec endpoint) — an unauthenticated, fully-documented
+map of every endpoint and payload shape is not something to expose by
+default. This follows the same env-var-for-values convention established
+in `CONFIGURATION.md`. First established in M2, applies to every
+REST-exposing service thereafter (`command-api`, `query-api`,
+`api-gateway`).
+
 ---
 
 ## 5. Build tooling and dependencies
