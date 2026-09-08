@@ -30,6 +30,18 @@ complexity **selectively, not universally**:
   delegating to a well-known library call, straightforward DTO
   construction. A Big O comment on something O(1) and obviously so is
   noise, not documentation.
+- **Cyclomatic complexity is a separate concern from Big O — track both,
+  don't conflate them.** Big O measures how runtime/space scales with
+  input size (loops, recursion, data structure choice). Cyclomatic
+  complexity measures how many independent branches exist through a
+  method's control flow (`if`/`else`/`switch`/`&&`/`||`/loops) — it's
+  about testability and cognitive load, not scale. A method can be O(1)
+  and still hard to test exhaustively if it has many branches; a method
+  can have almost no branching and still be O(n²). When a method's
+  branching gets high enough that reasoning about every path (or writing
+  a test per path) becomes genuinely hard, that's a signal to refactor
+  (extract methods, replace conditionals with polymorphism/a lookup
+  table) — independent of whatever its Big O already is. 
 - This is discussed as part of the normal step-by-step pairing process
   (per the pairing style above), not bolted on after the fact — complexity
   is part of the design decision, not a lint pass at the end.
