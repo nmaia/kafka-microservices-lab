@@ -14,6 +14,26 @@ How this project gets built, session to session — not what's been built (see
   explained and discussed before being implemented — the developer weighs in,
   not just approves.
 
+## Complexity analysis & rationale comments
+When implementing business logic (starting M2), analyze and comment Big O
+complexity **selectively, not universally**:
+
+- **Do it** for any method with a genuine algorithmic choice — loops over
+  collections, nested iteration, recursion, or a choice between data
+  structures with different lookup/insert complexity. State the actual
+  complexity and *why*, reasoning as if this were a real production
+  scenario even though current sandbox volumes are tiny — that's the
+  point: build the habit before scale forces it. If a worse complexity is
+  being deliberately accepted (e.g., simplicity over performance at this
+  stage), say so explicitly in the comment.
+- **Skip it** for trivial code — field access, simple conditionals,
+  delegating to a well-known library call, straightforward DTO
+  construction. A Big O comment on something O(1) and obviously so is
+  noise, not documentation.
+- This is discussed as part of the normal step-by-step pairing process
+  (per the pairing style above), not bolted on after the fact — complexity
+  is part of the design decision, not a lint pass at the end.
+
 ## Documentation, after every milestone
 Once a milestone's Definition of Done (per `implementation-roadmap.md`) is
 verified, before moving to the next milestone:
