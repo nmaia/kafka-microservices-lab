@@ -261,6 +261,17 @@ in `CONFIGURATION.md`. First established in M2, applies to every
 REST-exposing service thereafter (`command-api`, `query-api`,
 `api-gateway`).
 
+### 4.6 Object mapping
+
+**MapStruct** is the intended library for DTO/entity/read-model mapping,
+once a real mapping need exists — not introduced preemptively. M2's single
+`Order` ↔ `OrderCreated` Avro event conversion is simple enough to write by
+hand; MapStruct earns its place starting M3 (JPA entity ↔ domain `Order`)
+or M4 (Mongo document ↔ read DTO), where multiple shapes and directions
+make hand-written mapping genuinely tedious and error-prone. See
+`docs/REFERENCES.md` for the rationale behind choosing it over
+ModelMapper/reflection-based alternatives.
+
 ---
 
 ## 5. Build tooling and dependencies

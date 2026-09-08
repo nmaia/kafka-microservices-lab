@@ -96,6 +96,16 @@ well-regarded source offers better or more current thinking than an older
   covers CQRS as one pattern among several. Worth reading directly given
   M4 is a dedicated milestone, not just a passing implementation.
 
+## Object Mapping
+- **MapStruct's official documentation (mapstruct.org)** — the de facto
+  standard Java mapping library: compile-time code generation via
+  annotation processor, not runtime reflection, giving compile-time errors
+  on unmappable fields and zero reflection overhead. The closest Java
+  equivalent to Mapperly's philosophy in .NET (compile-time generation,
+  explicit interfaces) rather than AutoMapper/ModelMapper's reflection-based
+  approach. Not yet used as of M2 — see `implementation-roadmap.md` for
+  where it's expected to first earn its place.
+
 ## NoSQL / Polyglot Persistence
 - **Pramod Sadalage, Martin Fowler — *NoSQL Distilled* (2012)** — despite
   its age, still the clearest conceptual grounding for *why* and *when* a

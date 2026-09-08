@@ -81,6 +81,7 @@ a listed pattern doesn't feel justified by what you're actually building, skip i
 
 - `docker-compose.outbox.yml`: Postgres, Flyway migrations (`orders` table, `outbox_events` table)
 - `JpaOrderRepository` adapter implementing the same `OrderRepository` port from M2 — **the port doesn't change**, only the adapter
+- *(Watch for it)* If mapping between `Order` (domain) and its JPA entity representation gets tedious/repetitive by hand, this is a natural point to introduce **MapStruct** — see `docs/REFERENCES.md`. Don't add it preemptively if the mapping stays trivial.
 - `Order.confirm()` — a real state transition, producing a domain event internally
 - Outbox write happens in the *same transaction* as the aggregate save
 - First Testcontainers integration test: real Postgres, assert outbox row exists in the same commit
@@ -105,6 +106,7 @@ a listed pattern doesn't feel justified by what you're actually building, skip i
 
 - `docker-compose.cqrs.yml`: MongoDB, `query-api` (thin, anemic read models — no rich domain here, as discussed)
 - `query-api` consumes `order-events`, projects into denormalized Mongo documents
+- *(Watch for it)* Same MapStruct consideration as M3, now for Mongo document ↔ read DTO shapes — likely a stronger candidate here given the denormalized document shape differs more from the source event than a straightforward JPA entity would.
 - Scale `query-api` to 3 replicas; observe partition assignment in Kafka UI
 - Awaitility-based integration test: write via `order-service`, assert Mongo reflects it within a timeout (proving eventual consistency, not pretending it's instant)
 - Redis: cache-aside on `query-api` reads, plus event-driven invalidation (consumer listens for updates, evicts key)
