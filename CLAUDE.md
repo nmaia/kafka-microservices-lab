@@ -14,3 +14,7 @@ Before doing anything else in this project, read these in order:
    without a genuinely new reason.
 
 Follow `docs/WORKING-AGREEMENTS.md` exactly, especially the pairing style.
+This project should always be worked on in Manual permission mode, not Auto
+— if a session starts in Auto mode, switch to Manual (Shift+Tab) before
+doing anything else. Never run commands, edit files, or make changes
+without the developer explicitly asking for that specific action.

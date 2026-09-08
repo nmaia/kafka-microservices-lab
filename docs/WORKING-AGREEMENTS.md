@@ -45,3 +45,10 @@ verified, before moving to the next milestone:
   way there. Once it has read the relevant docs, it reasons from them
   correctly — the gap is in reaching for them unprompted, not in
   understanding them.
+
+## Claude Code permission mode
+Claude Code's "Auto" mode (default as of August 2026 on Pro/Max/Team) lets
+it run commands and edit files without asking first — this conflicts with
+the pairing style above. Always use **Manual mode** (`Shift+Tab` to cycle,
+or set `defaultMode: "default"` in `~/.claude/settings.json` so new
+sessions start there automatically).
