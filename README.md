@@ -73,6 +73,7 @@ kafka-microservices-lab/
 - **[Context Document](./sandbox-context-document.md)** — full architectural rationale: why Hexagonal over VSA, why KRaft, why Spring Cloud Gateway, etc. Settled decisions, not open questions.
 - **[Implementation Roadmap](./implementation-roadmap.md)** — the milestone-by-milestone build plan (M0–M10), with patterns and "definition of done" gates.
 - **[CONFIGURATION.md](./CONFIGURATION.md)** — the env-var-for-values vs. mount-for-structure convention used throughout.
+- **[References](./docs/REFERENCES.md)** — the books, authors, and docs informing the patterns used throughout this project.
 
 **Milestone logs** (what was built, why, and how issues were debugged):
 - [M0 — Foundations](./docs/milestones/M0-foundations.md)

@@ -12,6 +12,8 @@ Before doing anything else in this project, read these in order:
    architectural rationale and milestone plan. Treat decisions recorded here
    as settled; don't re-propose alternatives already considered and rejected
    without a genuinely new reason.
+4. `docs/REFERENCES.md` — authoritative sources behind the patterns used.
+   Anchors for judgment, not rules to follow blindly.
 
 Follow `docs/WORKING-AGREEMENTS.md` exactly, especially the pairing style.
 This project should always be worked on in Manual permission mode, not Auto
