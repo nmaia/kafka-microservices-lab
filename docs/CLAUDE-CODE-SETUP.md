@@ -45,6 +45,24 @@ Verify:
 claude --version
 ```
 
+### 3. Set Manual permission mode
+Claude Code's **Auto** mode (default as of August 2026 on Pro/Max/Team) lets
+it run commands and edit files without asking first — this conflicts with
+this project's pairing style (see `WORKING-AGREEMENTS.md`), which requires
+you to run every command yourself and have design decisions discussed
+before they're implemented.
+
+This is a global, per-user CLI setting (not project-specific), so set it
+once before your first session. Edit `~/.claude/settings.json` (create it
+if it doesn't exist) and add:
+```json
+{
+  "defaultMode": "default"
+}
+```
+New sessions will now start in Manual mode. If a session ever starts in
+Auto anyway, switch with `Shift+Tab` before doing anything else.
+
 ## IntelliJ plugin
 
 1. `File → Settings → Plugins → Marketplace`
