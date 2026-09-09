@@ -20,7 +20,12 @@
           "name": "OrderItem",
           "fields": [
             { "name": "sku", "type": "string" },
-            { "name": "quantity", "type": "int" }
+            { "name": "quantity", "type": "int" },
+            {
+              "name": "unitPrice",
+              "type": { "type": "bytes", "logicalType": "decimal", "precision": 10, "scale": 2 },
+              "default": "\u0000"
+            }
           ]
         }
       }

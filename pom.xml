@@ -26,6 +26,7 @@
   <modules>
     <module>sandbox-arch-rules</module>
     <module>sandbox-avro-schemas</module>
+    <module>order-service</module>
   </modules>
 
   <properties>
@@ -42,6 +43,7 @@
     <resilience4j.version>2.2.0</resilience4j.version>
     <opentelemetry-instrumentation.version>2.7.0</opentelemetry-instrumentation.version>
     <logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
+    <uuid-creator.version>6.1.1</uuid-creator.version>
 
     <!-- Confluent packages (kafka-avro-serializer, kafka-schema-registry-client)
          live in Confluent's repo, not Maven Central - required from M1 onward,
@@ -126,10 +128,40 @@
         <artifactId>logstash-logback-encoder</artifactId>
         <version>${logstash-logback-encoder.version}</version>
       </dependency>
+
+      <!-- UUIDv7 generation - java.util.UUID only generates v3/v4/v5 natively;
+           needed for Order's self-assigned, time-ordered identity starting M2 -->
+      <dependency>
+        <groupId>com.github.f4b6a3</groupId>
+        <artifactId>uuid-creator</artifactId>
+        <version>${uuid-creator.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
   <build>
+    <plugins>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>2.43.0</version>
+        <configuration>
+          <java>
+            <googleJavaFormat/>
+          </java>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-pmd-plugin</artifactId>
+        <version>3.28.0</version>
+        <configuration>
+          <rulesets>
+            <ruleset>${maven.multiModuleProjectDirectory}/pmd-ruleset.xml</ruleset>
+          </rulesets>
+        </configuration>
+      </plugin>
+    </plugins>
     <pluginManagement>
       <plugins>
         <plugin>

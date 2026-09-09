@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="Sandbox PMD Ruleset"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.github.io/schema/ruleset_2_0_0.xsd">
+
+    <description>
+        Sandbox-wide PMD ruleset. Starts from the default quickstart set, with
+        project-specific exclusions documented inline as they're discovered —
+        not preemptively, per docs/CODING-STYLE.md.
+    </description>
+
+    <rule ref="rulesets/java/quickstart.xml">
+        <!--
+          UseUtilityClass false-positives on every Spring Boot *Application.java
+          main class: PMD sees "all methods static" and assumes a utility class
+          needing a private constructor, but a Spring Boot entry point with a
+          public static void main(...) is the standard, correct idiom - not a
+          utility class. Recurs identically in every service, so excluded
+          project-wide rather than suppressed per-class.
+        -->
+        <exclude name="UseUtilityClass"/>
+    </rule>
+
+</ruleset>

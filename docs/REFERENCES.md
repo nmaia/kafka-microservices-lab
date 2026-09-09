@@ -26,6 +26,15 @@ well-regarded source offers better or more current thinking than an older
   of this project (Factory Method for `Order.create()`, etc.). Old, but
   still the common vocabulary everyone else uses.
 
+## Code Formatting & Static Analysis
+- **Google Java Format's official documentation
+  (github.com/google/google-java-format)** — the formatter itself; used
+  via the Spotless Maven plugin, with zero project-specific configuration
+  by design.
+- **PMD's official documentation (pmd.github.io)** — static analysis for
+  code smells and bug patterns, including the cyclomatic complexity rule
+  used to reinforce the discipline in `docs/WORKING-AGREEMENTS.md`.
+
 ## SOLID Principles / Clean Architecture
 - **Robert C. Martin ("Uncle Bob") — *Clean Architecture: A Craftsman's
   Guide to Software Structure and Design* (2017)**, and *Agile Software
@@ -47,6 +56,14 @@ well-regarded source offers better or more current thinking than an older
 - **Vaughn Vernon — *Implementing Domain-Driven Design* (2013)** — a more
   practical, applied companion to Evans; useful when Evans is more
   theoretical than the project needs.
+- **jMolecules (github.com/xmolecules/jmolecules)** — a Java annotation
+  library (`@AggregateRoot`, `@ValueObject`, `@DomainEvent`, etc.) for
+  expressing DDD building blocks explicitly, with zero runtime behavior of
+  its own; ships an ArchUnit integration that can verify those roles
+  structurally. Not yet used as of M2 — `Order`, `OrderLine`, and
+  `OrderCreatedEvent` are documented via plain Javadoc instead. Worth
+  revisiting at M10 (ArchUnit hardening), once there's a real ruleset to
+  plug it into, rather than adopted preemptively.
 
 ## Microservices Architecture
 - **Sam Newman — *Building Microservices* (2nd ed., 2021)** — broad

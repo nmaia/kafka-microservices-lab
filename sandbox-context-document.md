@@ -340,9 +340,10 @@ hardening step:
   Registry and SFTP/Mailpit have no first-party module, use `GenericContainer`),
   `awaitility` (for eventual-consistency assertions — CQRS lag, cache
   invalidation — instead of flaky `Thread.sleep`), `archunit-junit5`.
-- **Code quality**: Spotless (auto-formatting), Checkstyle or PMD, JaCoCo
-  (coverage as a *signal*, not a hard percentage gate — chasing a global number
-  produces low-value tests).
+- **Code quality**: Spotless with **Google Java Format** (non-negotiable, 
+  zero-config formatter), **PMD** (chosen over Checkstyle — see `docs/CODING-STYLE.md` 
+  for rationale), JaCoCo (coverage as a *signal*, not a hard percentage gate — 
+  chasing a global number produces low-value tests).
 - **Observability**: `opentelemetry-spring-boot-starter` (auto-instruments Spring
   MVC/WebFlux, JDBC, and Kafka clients — Kafka producer/consumer spans are
   automatic, important for tracing event flows), `logstash-logback-encoder` for

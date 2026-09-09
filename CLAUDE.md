@@ -14,6 +14,9 @@ Before doing anything else in this project, read these in order:
    without a genuinely new reason.
 4. `docs/REFERENCES.md` — authoritative sources behind the patterns used.
    Anchors for judgment, not rules to follow blindly.
+5. `docs/CODING-STYLE.md` — formatting (Google Java Format via Spotless)
+   and static analysis (PMD) rules, plus naming conventions. Code written
+   in this project should follow this.
 
 Follow `docs/WORKING-AGREEMENTS.md` exactly, especially the pairing style.
 This project should always be worked on in Manual permission mode, not Auto
