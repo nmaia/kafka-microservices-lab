@@ -1,7 +1,14 @@
 # Kafka Microservices Lab — Implementation Roadmap
 
-Each milestone is a "Lego brick": runnable on its own, verifiable before moving on, and
-never requiring rework of a previous brick. Don't start a milestone until the previous
+Each milestone is a "Lego brick": runnable on its own, verifiable before moving on. This
+means each milestone's ports/domain contracts should be stable enough that later
+milestones extend or swap *implementations* behind them (e.g., M3 replacing M2's
+in-memory `OrderRepository` adapter with a real JPA one) rather than requiring change to
+the contract itself. It does **not** mean earlier work is frozen — if a later milestone
+genuinely needs to change a previous module's contract or domain logic, that's allowed
+and sometimes necessary. Do it deliberately: discuss why before changing it, then update
+that earlier milestone's own doc (`docs/milestones/M<n>-*.md`) to reflect the change and
+the reason, rather than letting the original doc go stale. Don't start a milestone until the previous
 one is actually running and you've poked at it — that's the whole point of building it
 this way instead of top-down.
 
@@ -63,6 +70,7 @@ a listed pattern doesn't feel justified by what you're actually building, skip i
 - First 3–4 ArchUnit rules from `sandbox-arch-rules`: domain has no Spring/adapter dependencies
 
 **Definition of done:** 
+
 - `POST /orders` via curl produces a real Avro message, visible and schema-valid in Kafka UI.
 - Both `/swagger-ui.html` and `/scalar` render the live OpenAPI spec for
     `order-service`'s endpoints, and toggling `springdoc.api-docs.enabled=false`
@@ -88,7 +96,10 @@ a listed pattern doesn't feel justified by what you're actually building, skip i
 - Debezium + Kafka Connect container, Outbox Event Router SMT configured
 - ArchUnit rule: nothing outside `domain`/`application` may write to the outbox repository
 
-**Definition of done:** `POST /orders` → row in `orders` + row in `outbox_events` (same TX, verified by killing the app mid-request and confirming no partial state) → Debezium picks it up → real Kafka message, with zero application-level Kafka publish code involved.
+**Definition of done:** 
+
+- `POST /orders` → row in `orders` + row in `outbox_events` (same TX, verified by killing the app mid-request and confirming no partial state) → Debezium picks it up → real Kafka message, with zero application-level Kafka publish code involved.
+- Publishing the same outbox event twice (simulate a Debezium redelivery) doesn't create a duplicate business effect.
 
 | Pattern | Why here |
 |---|---|
@@ -131,7 +142,10 @@ a listed pattern doesn't feel justified by what you're actually building, skip i
 - Resilience4j circuit breaker on any outbound HTTP call that exists by now (none yet structurally, but wire the dependency and a health-check style breaker to prove config works — real use comes in M7)
 - Integration test: publish a deliberately malformed Avro payload, assert it lands in `.DLT` with exception headers intact
 
-**Definition of done:** you can watch a bad message route itself to the DLQ topic in Kafka UI, then replay it successfully via your reprocessor endpoint.
+**Definition of done:** 
+
+- You can watch a bad message route itself to the DLQ topic in Kafka UI, then replay it successfully via your reprocessor endpoint.
+- Replaying an already-successfully-processed message via the manual DLQ reprocessor doesn't double-apply its effect.
 
 | Pattern | Why here |
 |---|---|
@@ -172,7 +186,10 @@ a listed pattern doesn't feel justified by what you're actually building, skip i
 - **Then orchestration**: `saga-orchestrator` service, explicit state machine, drives `payment-service`/`inventory-service` rather than letting them react to each other
 - Compare the two: trace a failure through Seq for both flavors, see the difference in visibility/debuggability directly rather than just reading about it
 
-**Definition of done:** you can trigger a payment failure and watch the full compensating transaction complete correctly, in both choreography and orchestration modes, with a trace in Seq showing the whole chain.
+**Definition of done:**
+
+- You can trigger a payment failure and watch the full compensating transaction complete correctly, in both choreography and orchestration modes, with a trace in Seq showing the whole chain.
+- Redelivering an already-processed SAGA step event (in both choreography and orchestration modes) doesn't trigger a duplicate payment/reservation/compensation.
 
 | Pattern | Why here |
 |---|---|

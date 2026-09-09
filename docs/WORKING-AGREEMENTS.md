@@ -69,7 +69,13 @@ verified, before moving to the next milestone:
     - Mark the milestone done in the status table
     - Update the "Next up" line
     - Add any newly-discovered gotchas to the "Known gotchas" section
-3. Commit both together, e.g. `git commit -m "docs: M<n> summary + checklist update"`
+3. Commit both together, e.g. `git commit -m "docs: M<n> summary + checklist update"`.
+
+**If the current milestone changes something from an earlier one** (a port's shape, a domain contract, 
+behavior documented in a prior milestone doc) — this is allowed, sometimes necessary, and should never be silent. 
+Discuss why before changing it (per the pairing style above), then update that **earlier** milestone's `docs/milestones/M<n>-*.md` 
+to reflect what changed and why, rather than only documenting it in the current milestone's doc. See `implementation-roadmap.md`'s 
+opening note for what's expected to stay stable (ports/contracts) versus what's expected to evolve (implementations behind them).
 
 ## Using Claude Code (or any AI assistant) on this repo
 - Claude Code reads project files directly, but doesn't automatically

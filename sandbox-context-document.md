@@ -272,6 +272,26 @@ make hand-written mapping genuinely tedious and error-prone. See
 `docs/REFERENCES.md` for the rationale behind choosing it over
 ModelMapper/reflection-based alternatives.
 
+### 4.7 Idempotent consumers
+
+Kafka's delivery guarantee is **at-least-once**, not exactly-once, for
+ordinary consumers — every consumer in this system must be written
+assuming a message can be redelivered (broker failover, consumer
+rebalance mid-processing, DLQ manual replay, retry-with-backoff all
+reintroduce a message that may have already been fully processed).
+Idempotency is therefore a standing requirement, not an optional
+hardening step:
+
+- Consumers that cause a state change (payment processing, inventory
+  reservation, outbox-derived side effects) must be safe to process the
+  same message twice with no different outcome — typically via a
+  dedup/idempotency key (e.g. the event's own ID) checked before applying
+  the effect.
+- This applies especially at M5 (DLQ replay), M7 (SAGA — both
+  choreography and orchestration), and M8 (webhook retries) — anywhere
+  retry or replay is a designed part of the system, not just a rare edge
+  case.
+
 ---
 
 ## 5. Build tooling and dependencies
