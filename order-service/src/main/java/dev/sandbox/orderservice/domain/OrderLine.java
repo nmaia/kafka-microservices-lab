@@ -3,9 +3,9 @@ package dev.sandbox.orderservice.domain;
 import java.math.BigDecimal;
 
 /**
- * Value object - immutable, identity-less line item. Equal by value (record
- * semantics), and cannot exist in an invalid state - invariants are enforced
- * in the compact constructor rather than trusted from the caller.
+ * Value object - immutable, identity-less line item. Equal by value (record semantics), and cannot
+ * exist in an invalid state - invariants are enforced in the compact constructor rather than
+ * trusted from the caller.
  */
 public record OrderLine(String sku, int quantity, BigDecimal unitPrice) {
 

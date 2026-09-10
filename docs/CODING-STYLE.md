@@ -84,6 +84,17 @@ These naming conventions are intended to eventually become explicit
 ArchUnit rules in M10 (`sandbox-arch-rules`), turning this documented
 convention into an enforced one — not yet wired as of M2.
 
+## Structural role comments
+
+Every domain/application/adapter class carries a short Javadoc block at
+the top stating its structural role (aggregate root, value object, domain
+event, port, adapter, use case, etc.) plus a one-line *why* — not a
+restatement of what the code already shows. Applied as each class is
+written, not retrofitted afterward. Established in M2 on `Order`,
+`OrderLine`, `OrderCreatedEvent`, `DomainEvent`, `OrderRepository`, and
+`InMemoryOrderRepository` — same discipline every service follows going
+forward.
+
 ## Where this gets wired in
 
 Spotless and PMD are configured once, in the parent `pom.xml`'s
