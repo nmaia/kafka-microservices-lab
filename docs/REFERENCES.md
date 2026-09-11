@@ -41,6 +41,14 @@ well-regarded source offers better or more current thinking than an older
   Development, Principles, Patterns, and Practices* (2002) — the source of
   SOLID as a discipline; directly informs how Hexagonal's `domain/` layer
   should stay dependency-free (Dependency Inversion in particular).
+- **Robert C. Martin ("Uncle Bob") — *Clean Code: A Handbook of Agile
+  Software Craftsmanship* (2008)** — function-level code quality: small
+  functions with a single responsibility, meaningful naming, and the
+  guideline that more than ~2-3 parameters should collapse into a single
+  object (directly used to justify `CreateOrderCommand` over a long
+  parameter list on `CreateOrderUseCase`). Distinct from *Clean
+  Architecture* above — this operates at the function/class level, not
+  the system-architecture level.
 
 ## Hexagonal Architecture (Ports & Adapters)
 - **Alistair Cockburn — original "Hexagonal Architecture" writings

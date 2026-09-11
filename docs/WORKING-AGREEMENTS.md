@@ -13,6 +13,13 @@ How this project gets built, session to session — not what's been built (see
 - When there's a genuine design decision (not just a mechanical step), it's
   explained and discussed before being implemented — the developer weighs in,
   not just approves.
+- Design suggestions must reflect current, real-world industry practice —
+  not whatever's simplest to implement in this sandbox — regardless of how
+  much extra effort that takes to build. This project exists specifically
+  to validate real architectural patterns before proposing them for actual
+  production systems (`sandbox-context-document.md`), so a shortcut
+  that wouldn't hold up in a real system defeats that purpose even when it
+  would technically work fine for the milestone at hand.
 
 ## Complexity analysis & rationale comments
 When implementing business logic (starting M2), analyze and comment Big O

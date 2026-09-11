@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: order-service
+  kafka:
+    # Reaches the `kafka` container's EXTERNAL listener (docker-compose.base.yml),
+    # published on the host at localhost:9092 - order-service runs on the host via
+    # `mvn spring-boot:run`, not inside Docker, so it can't use the internal
+    # PLAINTEXT://kafka:9094 listener the other containers use.
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      # Confluent's Avro serializer - looks up/validates the schema against
+      # Schema Registry (via schema.registry.url below) before publishing.
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      # Explicit rather than relying on the client default (which happens to
+      # already be "all" as of Kafka 3.x) - durability guarantee for order
+      # events should be visible in config, not implied.
+      acks: all
+    properties:
+      # Schema Registry's REST API, published on host localhost:8081. Confluent's
+      # serializer reads this from the generic `properties` passthrough map, since
+      # Spring Boot has no first-class spring.kafka.* field for it.
+      schema.registry.url: ${SCHEMA_REGISTRY_URL:http://localhost:8081}
+      # Disabled deliberately (client default is true) - schemas are registered
+      # by hand via Kafka UI as their own reviewed step (see M1/M2 milestone docs),
+      # mirroring how a real CI pipeline gates schema changes. Leaving this on
+      # would let the producer silently register an unreviewed schema at runtime
+      # instead of failing loudly on a mismatch.
+      auto.register.schemas: false
+      # Also already the Kafka 3.x client default - explicit for the same reason
+      # as acks above. Prevents duplicate messages on producer retry.
+      enable.idempotence: true
+
+app:
+  kafka:
+    topics:
+    # Custom property (not Spring Kafka's built-in spring.kafka.template.default-topic)
+    # since a service will likely need to reason about more than one topic later

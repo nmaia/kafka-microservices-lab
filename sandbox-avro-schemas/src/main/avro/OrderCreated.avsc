@@ -30,6 +30,6 @@
         }
       }
     },
-    { "name": "createdAt", "type": "long" }
+    { "name": "createdAt", "type": { "type": "long", "logicalType": "timestamp-millis" } }
   ]
 }
