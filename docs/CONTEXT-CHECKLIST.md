@@ -23,7 +23,7 @@ assistant — without re-reading every milestone doc in full.
 |---|---|---|
 | M0 — Foundations | ✅ Done | `docs/milestones/M0-foundations.md` |
 | M1 — Kafka Core | ✅ Done | `docs/milestones/M1-kafka-core.md` |
-| M2 — order-service (Hexagonal skeleton) | ⏳ Not started | — |
+| M2 — order-service (Hexagonal skeleton) | 🔄 In progress — domain, `OrderRepository` port + in-memory adapter, Kafka producer adapter done; use case, REST controller, OpenAPI, tests, ArchUnit rules still open | — |
 | M3–M10 | ⏳ Not started | — |
 
 ## How to start the stack
@@ -54,4 +54,4 @@ See [`docs/CLAUDE-CODE-SETUP.md`](./CLAUDE-CODE-SETUP.md#starting-a-session-ever
 - PowerShell + Docker + embedded JSON quoting is fragile — prefer `docker cp` + an interactive `docker exec -it <container> bash` shell over trying to escape everything inline.
 
 ## Next up
-M2 — first Spring Boot service (`order-service`), Hexagonal package skeleton, real Kafka producer publishing `OrderCreated`.
+M2 — `CreateOrderUseCase` and `OrderController` (REST), wiring the existing domain/repository/producer adapter into an actual `POST /orders` flow; then `springdoc-openapi` (Swagger UI + Scalar), unit tests for `Order`, and the first ArchUnit rules.
