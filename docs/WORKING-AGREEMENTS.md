@@ -84,6 +84,30 @@ Discuss why before changing it (per the pairing style above), then update that *
 to reflect what changed and why, rather than only documenting it in the current milestone's doc. See `implementation-roadmap.md`'s 
 opening note for what's expected to stay stable (ports/contracts) versus what's expected to evolve (implementations behind them).
 
+## Cross-session continuity (WIP files)
+
+A Claude Code session doesn't reliably carry forward into the next one —
+`claude -c` only resumes the *most recent* session in this directory, and
+even that's not guaranteed (closed without `-c`, a different session
+started in between, a longer gap between sessions). Without something
+written down, mid-milestone context (why a decision was made, what
+command produced what error, what's actually been tried) is gone by the
+time a new session picks the work back up.
+
+To avoid losing that: while a milestone is in progress, keep
+`docs/milestones/M<n>-WIP.md` — created when the milestone starts,
+appended to at the same checkpoints already described above (a step
+confirmed working, a design decision made and why, an error hit and how
+it was resolved), not reconstructed from memory at the end. It's raw
+material, not polished prose — the same content the final milestone doc
+needs (see the numbered list above), just captured as it happens instead
+of all at once.
+
+Once the milestone's Definition of Done is verified, the WIP file's
+content is distilled into the real `docs/milestones/M<n>-<short-name>.md`
+per the process above, and the WIP file is deleted — it's scaffolding
+for that doc, not a permanent artifact alongside it.
+
 ## Using Claude Code (or any AI assistant) on this repo
 - Claude Code reads project files directly, but doesn't automatically
   prioritize `docs/` over raw code state when reasoning about status — it can

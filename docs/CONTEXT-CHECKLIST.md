@@ -8,6 +8,9 @@ assistant — without re-reading every milestone doc in full.
 - `sandbox-context-document.md` — full architecture rationale & decisions (treat as settled)
 - `implementation-roadmap.md` — milestone-by-milestone plan, M0–M10
 - `docs/milestones/*.md` — what was actually done + troubleshooting, per milestone
+- `docs/milestones/M<n>-WIP.md` (if present) — in-progress notes for the
+  current milestone; check this before assuming you know the current
+  state. See `WORKING-AGREEMENTS.md`'s "Cross-session continuity" section.
 
 ## Environment (established in M0)
 - JDK: Amazon Corretto 21 (LTS)
