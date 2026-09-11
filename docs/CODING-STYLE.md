@@ -53,6 +53,17 @@ one class at a time. Current exclusions:
   correct idiom). Excluded project-wide rather than suppressed per-class,
   since it recurs identically in every service.
 
+PMD is also configured with `excludeRoots` pointing at
+`target/generated-sources/avro`, so Avro-generated POJOs are skipped
+entirely rather than analyzed and suppressed. Generated code isn't
+something anyone hand-edits to satisfy a style rule, so excluding the
+source root is the correct fix — the same reasoning as excluding a
+recurring rule ruleset-wide, just applied at the source-root level
+instead of the rule level. This was discovered as a real finding (124
+violations on `sandbox-avro-schemas`'s generated sources) once
+Spotless/PMD were bound into the build lifecycle, not designed
+preemptively.
+
 New rules get added or tuned as real findings come up, not preemptively —
 consistent with the project's general "earn its place" philosophy for
 tooling (same reasoning already applied to `sandbox-arch-rules` in M0). A
@@ -98,6 +109,19 @@ forward.
 ## Where this gets wired in
 
 Spotless and PMD are configured once, in the parent `pom.xml`'s
-`pluginManagement`, so every module inherits the same configuration
-without redeclaring it — same pattern already used for shared dependency
-versions in M0.
+`<build><plugins>` (not `pluginManagement` — plugins declared directly
+under `<plugins>` are inherited *and executed* by every child module
+automatically, which is what lets every module enforce the same rules
+without redeclaring anything). Both checks are bound into the standard
+Maven lifecycle via `<executions>`, not left as manual goals:
+
+- `spotless:check` runs at the `validate` phase — first in the
+  lifecycle, so a formatting problem fails fast before compiling or
+  testing anything.
+- `pmd:check` runs at its default `verify` phase, after compile and
+  test.
+
+This means `mvn verify` (and anything that includes it, like `install`)
+fails the build automatically on unformatted code or a PMD violation —
+`spotless:apply`/`spotless:check` and `pmd:check` are no longer commands
+that have to be remembered and run by hand.

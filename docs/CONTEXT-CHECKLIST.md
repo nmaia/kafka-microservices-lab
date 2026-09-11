@@ -14,6 +14,9 @@ assistant — without re-reading every milestone doc in full.
 - Maven: installed manually from maven.apache.org, on `PATH`
 - Docker Desktop: kept updated via built-in updater
 - IntelliJ plugin: "Avro Schema Support" (Oscar Westra van Holthe - Kind) for `.avsc`/`.avdl` editing
+- IntelliJ plugin: "google-java-format" — enabled so Reformat Code
+  (Ctrl+Alt+L) applies Google Java Format instead of IntelliJ's default
+  formatter, matching the Spotless-enforced style in the build.
 
 ## Milestone status
 | Milestone | Status | Doc |
@@ -42,6 +45,10 @@ See [`docs/CLAUDE-CODE-SETUP.md`](./CLAUDE-CODE-SETUP.md#starting-a-session-ever
 
 ## Known gotchas (full detail in the relevant milestone doc)
 - Avro Maven plugin's decimal flag is `enableDecimalLogicalType` — **singular**, no trailing "s".
+- PMD analyzes every compile source root by default, including
+  Avro-generated code under `target/generated-sources/avro` — exclude
+  it via `excludeRoots` in the parent `pom.xml`'s PMD plugin config,
+  not per-violation suppression.
 - `kafka-avro-console-producer` lives in the `schema-registry` container, not `kafka`.
 - Avro `decimal` fields can't be hand-typed via the CLI console producer — use a throwaway topic/schema for CLI smoke tests, never the real one.
 - PowerShell + Docker + embedded JSON quoting is fragile — prefer `docker cp` + an interactive `docker exec -it <container> bash` shell over trying to escape everything inline.

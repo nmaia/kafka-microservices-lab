@@ -150,6 +150,14 @@
             <googleJavaFormat/>
           </java>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>validate</phase>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -159,7 +167,17 @@
           <rulesets>
             <ruleset>${maven.multiModuleProjectDirectory}/pmd-ruleset.xml</ruleset>
           </rulesets>
+          <excludeRoots>
+            <excludeRoot>${project.build.directory}/generated-sources/avro</excludeRoot>
+          </excludeRoots>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
     <pluginManagement>
