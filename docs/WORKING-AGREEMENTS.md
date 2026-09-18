@@ -62,7 +62,10 @@ complexity **selectively, not universally**:
 Once a milestone's Definition of Done (per `implementation-roadmap.md`) is
 verified, before moving to the next milestone:
 
-1. Create `docs/milestones/M<n>-<short-name>.md` containing:
+1. Promote `docs/milestones/M<n>-WIP.md` into
+   `docs/milestones/M<n>-<short-name>.md` (rename and distill it, per the
+   "Cross-session continuity" section below — not a freshly written
+   file) containing:
     - **Goal** — one line, from the roadmap
     - **What was built** — concrete artifacts (files, services, configs)
     - **Decisions & trade-offs** — real alternatives considered and why one
@@ -96,17 +99,22 @@ time a new session picks the work back up.
 
 To avoid losing that: while a milestone is in progress, keep
 `docs/milestones/M<n>-WIP.md` — created when the milestone starts,
-appended to at the same checkpoints already described above (a step
+considered at every commit made during the milestone and updated
+whenever that commit actually has something worth capturing (a step
 confirmed working, a design decision made and why, an error hit and how
-it was resolved), not reconstructed from memory at the end. It's raw
-material, not polished prose — the same content the final milestone doc
-needs (see the numbered list above), just captured as it happens instead
-of all at once.
+it was resolved). Not every commit needs an entry — some are purely
+mechanical and add nothing new — but every commit is a prompt to check,
+so nothing worth keeping slips through unrecorded. Not reconstructed
+from memory at the end. It's raw material, not polished prose — the same
+content the final milestone doc needs (see the numbered list above),
+just captured as it happens instead of all at once.
 
-Once the milestone's Definition of Done is verified, the WIP file's
-content is distilled into the real `docs/milestones/M<n>-<short-name>.md`
-per the process above, and the WIP file is deleted — it's scaffolding
-for that doc, not a permanent artifact alongside it.
+Once the milestone's Definition of Done is verified, the WIP file is
+**promoted**, not replaced: renamed to
+`docs/milestones/M<n>-<short-name>.md` and distilled into polished prose
+per the process above, rather than a fresh file being written and the
+WIP one deleted separately — it's scaffolding for that doc, not a
+permanent artifact alongside it.
 
 ## Using Claude Code (or any AI assistant) on this repo
 - Claude Code reads project files directly, but doesn't automatically

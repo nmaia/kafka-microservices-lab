@@ -26,7 +26,7 @@ assistant — without re-reading every milestone doc in full.
 |---|---|---|
 | M0 — Foundations | ✅ Done | `docs/milestones/M0-foundations.md` |
 | M1 — Kafka Core | ✅ Done | `docs/milestones/M1-kafka-core.md` |
-| M2 — order-service (Hexagonal skeleton) | 🔄 In progress — domain, `OrderRepository` port + in-memory adapter, Kafka producer adapter done; use case, REST controller, OpenAPI, tests, ArchUnit rules still open | — |
+| M2 — order-service (Hexagonal skeleton) | 🔄 In progress — domain, `OrderRepository` port + in-memory adapter, `CreateOrderUseCase`, Kafka producer adapter built (not yet tested end-to-end); `OrderController` (REST), OpenAPI, tests, ArchUnit rules still open | `docs/milestones/M2-WIP.md` |
 | M3–M10 | ⏳ Not started | — |
 
 ## How to start the stack
@@ -57,4 +57,4 @@ See [`docs/CLAUDE-CODE-SETUP.md`](./CLAUDE-CODE-SETUP.md#starting-a-session-ever
 - PowerShell + Docker + embedded JSON quoting is fragile — prefer `docker cp` + an interactive `docker exec -it <container> bash` shell over trying to escape everything inline.
 
 ## Next up
-M2 — `CreateOrderUseCase` and `OrderController` (REST), wiring the existing domain/repository/producer adapter into an actual `POST /orders` flow; then `springdoc-openapi` (Swagger UI + Scalar), unit tests for `Order`, and the first ArchUnit rules.
+M2 — `OrderController` (REST) wiring the existing `CreateOrderUseCase` into an actual `POST /orders` flow; then verify the Kafka producer end-to-end for the first time (register `OrderCreated`'s schema, publish via a real request, consume from the topic to confirm it lands) — this hasn't been tested yet. After that: `springdoc-openapi` (Swagger UI + Scalar), unit tests for `Order`, and the first ArchUnit rules.
