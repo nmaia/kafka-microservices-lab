@@ -141,6 +141,8 @@
 
   <build>
     <plugins>
+      <!-- Enforces Google Java Format (docs/CODING-STYLE.md) on every build, bound
+           to validate (before compile) so a formatting violation fails fast. -->
       <plugin>
         <groupId>com.diffplug.spotless</groupId>
         <artifactId>spotless-maven-plugin</artifactId>
@@ -159,6 +161,10 @@
           </execution>
         </executions>
       </plugin>
+      <!-- Static analysis via pmd-ruleset.xml, bound to verify so mvn verify fails
+           the build on a violation. excludeRoots skips Avro-generated sources -
+           generated code isn't hand-edited to satisfy a style rule, so the source
+           root is excluded rather than suppressing each violation individually. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-pmd-plugin</artifactId>
@@ -179,14 +185,32 @@
           </execution>
         </executions>
       </plugin>
+      <!-- parameters=true: this project's modules import the Spring Boot BOM
+           rather than extending spring-boot-starter-parent, so they miss the
+           <parameters>true</parameters> javac flag a stock Spring Boot project
+           gets for free. Without it, parameter names are stripped from bytecode
+           and Spring can't resolve @PathVariable/@RequestParam by name
+           (see docs/milestones/M2-WIP.md's troubleshooting log). -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.15.0</version>
+        <configuration>
+          <parameters>true</parameters>
+        </configuration>
+      </plugin>
     </plugins>
     <pluginManagement>
       <plugins>
+        <!-- Version pinned here; execution/config declared per-module since only
+             sandbox-avro-schemas generates Avro sources so far. -->
         <plugin>
           <groupId>org.apache.avro</groupId>
           <artifactId>avro-maven-plugin</artifactId>
           <version>${avro.version}</version>
         </plugin>
+        <!-- Version pinned here so every Spring Boot service module (order-service,
+             and future ones) builds an executable jar without redeclaring it. -->
         <plugin>
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>

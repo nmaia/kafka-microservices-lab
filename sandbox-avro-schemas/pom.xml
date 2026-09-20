@@ -46,7 +46,17 @@
             <configuration>
               <sourceDirectory>${project.basedir}/src/main/avro</sourceDirectory>
               <outputDirectory>${project.build.directory}/generated-sources/avro</outputDirectory>
+              <!-- Generated fields use java.lang.String instead of Avro's default
+                   Utf8/CharSequence - simpler interop with Spring/Jackson. Side
+                   effect: the generated class's embedded schema is not byte-identical
+                   to the .avsc source (an extra "avro.java.string":"String" per
+                   string field) - when auto.register.schemas is off, always register
+                   the schema pulled from the generated class's SCHEMA$ field, never
+                   the .avsc source (see docs/milestones/M2-WIP.md's troubleshooting
+                   log for the 404 this caused). -->
               <stringType>String</stringType>
+              <!-- Singular - no trailing "s" - easy to typo (docs/CONTEXT-CHECKLIST.md
+                   gotchas). -->
               <enableDecimalLogicalType>true</enableDecimalLogicalType>
             </configuration>
           </execution>

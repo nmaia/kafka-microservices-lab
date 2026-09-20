@@ -53,14 +53,16 @@ with almost no business complexity yet. (`implementation-roadmap.md`)
 - `app.kafka.topics.order-events` binding actually populated in
   `application.yml` (was previously just a comment with no key under it)
 
+- `maven-compiler-plugin` (`3.15.0`, pinned explicitly) added to the root
+  `pom.xml`'s `<build><plugins>` with `<parameters>true</parameters>` —
+  fixes `@PathVariable`/`@RequestParam` resolution for every module (see
+  Troubleshooting log)
+
 ## Not yet built (open for M2)
 - `springdoc-openapi` (Swagger UI + Scalar) — not in `order-service/pom.xml`
 - Unit tests for `Order` — no `src/test/java` exists yet in `order-service`
 - First ArchUnit rules for `order-service` — `sandbox-arch-rules` dependency
   is present (test scope) but unused so far
-- **`GET /orders/{orderId}` is implemented but broken** — root-caused, fix
-  not yet applied (see Troubleshooting log). Root pom.xml needs a
-  `maven-compiler-plugin` entry with `<parameters>true</parameters>`.
 
 ## Decisions & trade-offs
 - `CreateOrderCommand` as its own record rather than a long parameter list on
@@ -116,9 +118,12 @@ with almost no business complexity yet. (`implementation-roadmap.md`)
   total (`2 × 19.99 = 39.98`); the resulting `OrderCreated` message was
   confirmed present and correctly decoded on the `order-events` topic via
   Kafka UI (http://localhost:8080). M2's core Kafka-producer DoD is met.
-- **`GET /orders/{orderId}`: still broken.** Root cause diagnosed (see
-  Troubleshooting log, last entry) but the fix was never applied before
-  the session ended — needs to be picked back up.
+- **`GET /orders/{orderId}`: confirmed working.** After the
+  `maven-compiler-plugin` fix, a fresh `POST` (`201`,
+  `orderId=01a0bfba-56ba-7700-b90a-a4038c0b9442`) followed by `GET` on that
+  same id returned `200` with a body matching the `POST` response exactly.
+  Both `OrderController` endpoints are verified end to end; M2's core DoD
+  is met.
 - Domain logic (`Order.create()` validations, total calculation) and the
   in-memory repository still haven't been exercised by an automated test —
   no `src/test/java` exists in `order-service` yet.
@@ -200,25 +205,45 @@ curl.exe -i http://localhost:8082/orders/<orderId>
   UI, instead of the `.avsc` source. **General gotcha**: whenever
   `stringType=String` is set, the `.avsc` source must never be what's
   registered — always pull the schema from the generated class.
-- **`GET /orders/{orderId}` fails — open, unresolved.** Root cause
-  diagnosed: `order-service` doesn't inherit `spring-boot-starter-parent`
-  (this project's modules extend their own multi-module parent and import
-  the Spring Boot BOM instead), so it never gets the
-  `<parameters>true</parameters>` compiler flag a stock Spring Boot
-  project gets for free. Without it, javac drops parameter names from
-  bytecode, so Spring can't resolve `@PathVariable String orderId` via
-  reflection. Fix identified but **not yet applied**: add to the root
-  `pom.xml`'s `<build><plugins>` (same inherited-by-every-module pattern
-  as Spotless/PMD):
+- **`GET /orders/{orderId}` failed — resolved.** Root cause: `order-service`
+  doesn't inherit `spring-boot-starter-parent` (this project's modules
+  extend their own multi-module parent and import the Spring Boot BOM
+  instead), so it never gets the `<parameters>true</parameters>` compiler
+  flag a stock Spring Boot project gets for free. Without it, javac drops
+  parameter names from bytecode, so Spring can't resolve
+  `@PathVariable String orderId` via reflection. Fixed by adding to the
+  root `pom.xml`'s `<build><plugins>` (same inherited-by-every-module
+  pattern as Spotless/PMD):
   ```xml
   <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-compiler-plugin</artifactId>
+    <version>3.15.0</version>
     <configuration>
       <parameters>true</parameters>
     </configuration>
   </plugin>
   ```
   Then `mvn -pl order-service compile` (parameter names are baked in at
-  compile time, so a fresh `.class` is required) and restart the running
-  process before retrying `GET`.
+  compile time, so a fresh `.class` is required) and restarting the
+  running process before retrying `GET`.
+  - First `mvn -pl order-service compile` after adding the plugin
+    succeeded but logged `'build.plugins.plugin.version' ... is missing`
+    for every module — the plugin block above initially had no
+    `<version>`, unlike Spotless/PMD which both pin one explicitly, so
+    Maven silently resolved the newest available version instead of a
+    fixed one. Fixed by pinning `<version>3.15.0</version>` (the version
+    the unpinned build had actually resolved to), matching the same
+    "explicit, not implied" reasoning already applied elsewhere.
+  - The first `GET` retry after the fix still 404'd, but that was a red
+    herring, not a fix failure: the `orderId` being reused was from an
+    order created in an *earlier* run of `order-service`, before this
+    session's restarts. `InMemoryOrderRepository` is wiped on every
+    process restart (it's explicitly temporary), so that order no longer
+    existed in memory — even though its `OrderCreated` message was still
+    sitting on `order-events` from when it was originally produced. Kafka
+    and the in-memory store are independent; an id present in one doesn't
+    imply it's present in the other. Confirmed the actual fix by POSTing a
+    **new** order in the current run and immediately `GET`-ing that same
+    id: `201` then `200`, response bodies matching exactly
+    (`orderId=01a0bfba-56ba-7700-b90a-a4038c0b9442`).
