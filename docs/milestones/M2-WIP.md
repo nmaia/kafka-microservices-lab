@@ -57,10 +57,16 @@ with almost no business complexity yet. (`implementation-roadmap.md`)
   `pom.xml`'s `<build><plugins>` with `<parameters>true</parameters>` —
   fixes `@PathVariable`/`@RequestParam` resolution for every module (see
   Troubleshooting log)
+- `OrderTest` (`order-service/src/test/java/dev/sandbox/orderservice/domain/`)
+  — 17 tests, JUnit 5 + AssertJ, grouped into three `@Nested` classes:
+  `Create` (field assignment, total calculation, `OrderCreatedEvent`
+  raising), `Validation` (parameterized null/blank/invalid-currency
+  matrices for `customerId`/`items`/`currency`), and
+  `EqualsAndHashCode` (DDD identity contract, including the same-`orderId`
+  case via reflection on the private constructor — see Decisions)
 
 ## Not yet built (open for M2)
 - `springdoc-openapi` (Swagger UI + Scalar) — not in `order-service/pom.xml`
-- Unit tests for `Order` — no `src/test/java` exists yet in `order-service`
 - First ArchUnit rules for `order-service` — `sandbox-arch-rules` dependency
   is present (test scope) but unused so far
 
@@ -111,6 +117,21 @@ with almost no business complexity yet. (`implementation-roadmap.md`)
   through a use case — a plain, unconditional repository lookup has no
   orchestration logic to justify one; consistent with Hexagonal (inbound
   adapters may depend on ports directly, not only through use cases).
+- `OrderTest` (`Order`'s first unit test class) does **not** introduce a
+  shared test-data builder — same "earn it, don't design for hypothetical
+  future" reasoning already applied to MapStruct and the DTO
+  subpackaging. It's the first test class in the project; a builder is
+  premature until a second test class (e.g. `CreateOrderUseCase`'s)
+  actually duplicates the same order-construction boilerplate.
+- `EqualsAndHashCode`'s same-`orderId`-different-fields case uses
+  reflection (`Constructor.setAccessible(true)`) to invoke `Order`'s
+  private constructor directly, rather than skipping the case. `create()`
+  always assigns a fresh `orderId`, so it's the only way to get two
+  instances sharing one — and without it, the actual DDD identity
+  contract the `equals()` override exists for (same `orderId` ⇒ equal,
+  regardless of every other field) would go unverified. Deliberate
+  trade-off: a test that reaches past the public API, chosen over leaving
+  the override's real behavior untested.
 
 ## Verification
 - **`POST /orders` → Kafka: confirmed end-to-end.** A real request
