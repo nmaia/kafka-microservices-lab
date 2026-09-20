@@ -64,11 +64,19 @@ with almost no business complexity yet. (`implementation-roadmap.md`)
   matrices for `customerId`/`items`/`currency`), and
   `EqualsAndHashCode` (DDD identity contract, including the same-`orderId`
   case via reflection on the private constructor — see Decisions)
+- First ArchUnit rules: `SandboxArchRules` (`sandbox-arch-rules`) gained
+  three parametrized rule methods — `domainDoesNotDependOnSpring`,
+  `domainDoesNotDependOnAdapters`, `domainDoesNotDependOnJpa` (the last one
+  forward-looking, ahead of M3's `JpaOrderRepository`). `order-service`
+  gained `HexagonalArchitectureTest` (`@AnalyzeClasses` +
+  `@ArchTest`-annotated `static final ArchRule` fields, per ArchUnit's own
+  JUnit 5 integration pattern), invoking all three against
+  `dev.sandbox.orderservice`. Verified with a negative-control check (see
+  Verification) — not just a pass, confirmed to actually catch a
+  violation.
 
 ## Not yet built (open for M2)
 - `springdoc-openapi` (Swagger UI + Scalar) — not in `order-service/pom.xml`
-- First ArchUnit rules for `order-service` — `sandbox-arch-rules` dependency
-  is present (test scope) but unused so far
 
 ## Decisions & trade-offs
 - `CreateOrderCommand` as its own record rather than a long parameter list on
@@ -132,6 +140,24 @@ with almost no business complexity yet. (`implementation-roadmap.md`)
   regardless of every other field) would go unverified. Deliberate
   trade-off: a test that reaches past the public API, chosen over leaving
   the override's real behavior untested.
+- ArchUnit rules defined as **parametrized static methods** in the shared
+  `sandbox-arch-rules` module (`domainDoesNotDependOnSpring(basePackage)`,
+  etc.) rather than hardcoded against `dev.sandbox.orderservice` — chosen
+  deliberately over the simpler "just write them in `order-service`'s test
+  suite" option, since `sandbox-arch-rules`'s whole purpose (per its own
+  module description) is being reused by every future service's test
+  suite (`payment-service`, `inventory-service`, ...) without
+  reimplementing the same checks.
+- `HexagonalArchitectureTest`'s `@AnalyzeClasses` uses
+  `importOptions = ImportOption.DoNotIncludeTests.class` — without it,
+  ArchUnit also imports `order-service`'s own test classes (e.g.
+  `OrderTest`, which sits in the `domain` package) and checks *them*
+  against the rules too. Test code legitimately uses JUnit/AssertJ/
+  reflection; these rules exist to police production code.
+- `domainDoesNotDependOnJpa` was added even though nothing in
+  `order-service` uses JPA yet — deliberately forward-looking, so the
+  constraint is locked in *before* M3 introduces `JpaOrderRepository`,
+  rather than relying on nobody putting `@Entity` on `Order` itself later.
 
 ## Verification
 - **`POST /orders` → Kafka: confirmed end-to-end.** A real request
@@ -145,9 +171,21 @@ with almost no business complexity yet. (`implementation-roadmap.md`)
   same id returned `200` with a body matching the `POST` response exactly.
   Both `OrderController` endpoints are verified end to end; M2's core DoD
   is met.
-- Domain logic (`Order.create()` validations, total calculation) and the
-  in-memory repository still haven't been exercised by an automated test —
-  no `src/test/java` exists in `order-service` yet.
+- **`Order` unit tests: confirmed.** `OrderTest` (17 tests — creation,
+  validation, identity) passes via `mvn -pl order-service test`. The
+  in-memory repository itself remains untested (no dedicated
+  `InMemoryOrderRepositoryTest` — its only real behavior is delegating to
+  `ConcurrentHashMap`, exercised indirectly via the end-to-end `POST`/`GET`
+  checks above).
+- **ArchUnit rules: confirmed, with a negative control.** All three
+  `HexagonalArchitectureTest` rules pass against current `order-service`
+  code (`mvn -pl order-service -am test`, 20/20 total incl. `OrderTest`).
+  Verified the rules aren't vacuously passing (e.g. from a package-name
+  typo matching zero classes): temporarily added a genuinely-used
+  `@Component` import to `Order.java`, reran the build, and confirmed
+  `domainDoesNotDependOnSpring` failed with a violation message correctly
+  naming `Order` and the `because(...)` reason — then reverted and
+  confirmed a clean 20/20 pass again.
 
 ## Commands reference
 
@@ -185,6 +223,19 @@ curl.exe -i http://localhost:8082/orders/<orderId>
 #    order-events topic, and confirm the newest message decodes correctly
 #    as the OrderCreated Avro record (schema must already be registered —
 #    see Troubleshooting log's Schema Registry entry if it 404s).
+```
+
+**Running the full test suite (unit + ArchUnit)**, after changing anything in
+`sandbox-arch-rules` as well as `order-service`:
+
+```powershell
+# -am (--also-make): builds order-service together with the sibling
+# modules it depends on (sandbox-arch-rules, sandbox-avro-schemas), using
+# their freshly-compiled classes directly. Plain `mvn -pl order-service
+# test` alone resolves sandbox-arch-rules from whatever's already in
+# ~/.m2 - stale if it was only just recompiled, not installed (see
+# Troubleshooting log).
+mvn -pl order-service -am test
 ```
 
 ## Troubleshooting log
@@ -268,3 +319,29 @@ curl.exe -i http://localhost:8082/orders/<orderId>
     **new** order in the current run and immediately `GET`-ing that same
     id: `201` then `200`, response bodies matching exactly
     (`orderId=01a0bfba-56ba-7700-b90a-a4038c0b9442`).
+- **`order-service` test build failed with `cannot find symbol` for the new
+  `SandboxArchRules` methods, right after `sandbox-arch-rules` had just
+  compiled clean.** Not a code error — a Maven multi-module reactor gotcha.
+  `mvn -pl order-service test` only builds `order-service` in isolation,
+  resolving `sandbox-arch-rules` from whatever jar is already sitting in
+  the local repo (`~/.m2`) — a stale one predating the new methods, since
+  compiling `sandbox-arch-rules` alone doesn't publish it anywhere.
+  **Fixed** with `mvn -pl order-service -am test` (`--also-make`): builds
+  `order-service` together with the sibling modules it depends on, in one
+  reactor run, using their freshly-compiled classes directly — no local
+  repo `install` step needed. Preferred over `mvn -pl sandbox-arch-rules
+  install` for day-to-day iteration, since `install` would need repeating
+  on every further `sandbox-arch-rules` change.
+- **Negative-control check for the new ArchUnit rules didn't trigger a
+  failure on the first attempt** — added `import
+  org.springframework.stereotype.Component;` to `Order.java` with nothing
+  using it, expecting `domainDoesNotDependOnSpring` to fail, but Spotless
+  failed the build first with a format violation showing the import being
+  *removed*. Google Java Format strips unused imports automatically as
+  part of formatting, so an unused import can never survive to create a
+  real dependency for ArchUnit to catch. Fixed by annotating the class
+  itself (`@Component` on `Order`) instead of just importing — a genuine
+  usage Spotless won't touch. That reran and correctly failed
+  `domainDoesNotDependOnSpring`, naming `Order` and the `because(...)`
+  reason; reverting both the annotation and the import returned to a clean
+  20/20.
