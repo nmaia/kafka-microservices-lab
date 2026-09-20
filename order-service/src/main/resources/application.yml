@@ -1,6 +1,9 @@
 spring:
   application:
     name: order-service
+  mvc:
+    problemdetails:
+      enabled: true
   kafka:
     # Reaches the `kafka` container's EXTERNAL listener (docker-compose.base.yml),
     # published on the host at localhost:9092 - order-service runs on the host via
@@ -30,9 +33,13 @@ spring:
       # Also already the Kafka 3.x client default - explicit for the same reason
       # as acks above. Prevents duplicate messages on producer retry.
       enable.idempotence: true
-
+server:
+  # Kafka UI already publishes on 8080 (docker-compose.base.yml) - order-service
+  # needs its own port to run alongside it.
+  port: ${SERVER_PORT:8082}
 app:
   kafka:
     topics:
-    # Custom property (not Spring Kafka's built-in spring.kafka.template.default-topic)
-    # since a service will likely need to reason about more than one topic later
+      # Custom property (not Spring Kafka's built-in spring.kafka.template.default-topic)
+      # since a service will likely need to reason about more than one topic later
+      order-events: ${ORDER_EVENTS_TOPIC:order-events}

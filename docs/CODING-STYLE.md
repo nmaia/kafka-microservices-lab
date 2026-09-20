@@ -90,10 +90,35 @@ Section 4.1:
   (`JpaOrderRepository`, `InMemoryOrderRepository`) — the port itself
   stays technology-agnostic in its name (`OrderRepository`, not
   `OrderRepositoryPort` or similar redundant suffixing)
+- `*Request` / `*Response` — REST DTOs at the adapter boundary, anemic by
+  design (`CreateOrderRequest`, `OrderResponse`)
+- `*Mapper` — hand-written translation between a domain/application shape
+  and an adapter-boundary DTO (`OrderEventMapper`, `OrderRestMapper`);
+  revisit with MapStruct once mapping complexity actually earns it
+  (Section 4.6 of `sandbox-context-document.md`)
 
 These naming conventions are intended to eventually become explicit
 ArchUnit rules in M10 (`sandbox-arch-rules`), turning this documented
 convention into an enforced one — not yet wired as of M2.
+
+## Subpackaging within adapters
+
+The reference layout in `sandbox-context-document.md` Section 4.1 keeps
+each package flat (`domain/`, `application/`, `adapters/out/kafka/`,
+etc.) — that stays the default. A package earns a further subpackage
+only once it holds more than one structural *kind* of class and that mix
+genuinely gets in the way, not preemptively — same "earn its place"
+reasoning already applied to MapStruct (Section 4.6) and to PMD rules
+above.
+
+First applied in M2: `adapters/in/rest/dto/` holds the REST layer's
+request/response DTOs (`CreateOrderRequest`, `OrderLineRequest`,
+`OrderResponse`, `OrderLineResponse`), separated from `OrderController` /
+`OrderRestMapper` / the exception advice, which stay directly in
+`adapters/in/rest/`. It's the mix of three distinct roles in one folder
+that triggers the split, not file count alone. Other packages (`domain/`,
+`application/`, `adapters/out/*`) stay flat as of M2 — revisit only if a
+specific one grows enough to need it.
 
 ## Structural role comments
 
