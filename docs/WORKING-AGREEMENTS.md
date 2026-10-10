@@ -79,7 +79,10 @@ verified, before moving to the next milestone:
     - Mark the milestone done in the status table
     - Update the "Next up" line
     - Add any newly-discovered gotchas to the "Known gotchas" section
-3. Commit both together, e.g. `git commit -m "docs: M<n> summary + checklist update"`.
+3. Update `README.md`:
+    - Mark the milestone done (✅) in the Status table
+    - Add the new milestone doc to the "Milestone logs" list
+4. Commit all three together, e.g. `git commit -m "docs: M<n> summary + checklist update"`.
 
 **If the current milestone changes something from an earlier one** (a port's shape, a domain contract, 
 behavior documented in a prior milestone doc) — this is allowed, sometimes necessary, and should never be silent. 
