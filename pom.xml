@@ -44,6 +44,7 @@
     <opentelemetry-instrumentation.version>2.7.0</opentelemetry-instrumentation.version>
     <logstash-logback-encoder.version>8.0</logstash-logback-encoder.version>
     <uuid-creator.version>6.1.1</uuid-creator.version>
+    <springdoc.version>2.9.1</springdoc.version>
 
     <!-- Confluent packages (kafka-avro-serializer, kafka-schema-registry-client)
          live in Confluent's repo, not Maven Central - required from M1 onward,
@@ -136,6 +137,20 @@
         <artifactId>uuid-creator</artifactId>
         <version>${uuid-creator.version}</version>
       </dependency>
+
+      <!-- OpenAPI 3 spec generation for order-service's REST API - needed from
+           M2. `-webmvc-api`: spec generation only, no bundled UI - the spec is
+           rendered by Scalar (CDN-embedded), not springdoc's own Swagger UI, see
+           docs/milestones/M2-order-service.md for why. Pinned to the 2.x line
+           deliberately: springdoc's MAJOR version tracks Spring Boot's MAJOR
+           release (3.x targets Spring Boot 4), and this project is still on
+           Spring Boot 3.3.x. -->
+      <dependency>
+        <groupId>org.springdoc</groupId>
+        <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+        <version>${springdoc.version}</version>
+      </dependency>
+
     </dependencies>
   </dependencyManagement>
 

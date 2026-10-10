@@ -37,6 +37,14 @@ server:
   # Kafka UI already publishes on 8080 (docker-compose.base.yml) - order-service
   # needs its own port to run alongside it.
   port: ${SERVER_PORT:8082}
+springdoc:
+  api-docs:
+    # Gates the generated /v3/api-docs spec itself; ScalarController (next
+    # step) checks the same property so the whole UI disappears alongside
+    # it. On for local/dev, off for anything resembling prod - an
+    # unauthenticated map of every endpoint/payload shape shouldn't be
+    # exposed by default (CONFIGURATION.md's env-var-for-values convention).
+    enabled: ${SPRINGDOC_API_DOCS_ENABLED:true}
 app:
   kafka:
     topics:

@@ -70,6 +70,15 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
+
+        <!-- OpenAPI 3 spec generation for OrderController's endpoints, rendered by
+             Scalar (CDN-embedded) rather than a bundled Swagger UI - see
+             docs/milestones/M2-order-service.md for why. -->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-api</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
