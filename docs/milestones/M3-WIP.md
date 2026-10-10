@@ -125,6 +125,56 @@ transactions, in commit order** — rolled-back outbox inserts never appear
 (no phantoms), committed ones appear only after the order is durable, and
 no `published` flag or cleanup query is needed.
 
+### Debezium — what it is and why it's used
+Open-source (Apache 2.0) log-based CDC platform. Reads a DB's transaction
+log, decodes committed changes, publishes them as events. Connectors for
+Postgres, MySQL/MariaDB, SQL Server, Oracle, MongoDB, Db2, others.
+
+What it does with Postgres:
+1. Connects as a logical replication client (publication + slot,
+   `pgoutput`).
+2. Optional initial **snapshot** of existing rows (`snapshot.mode`) — for
+   an outbox table, history usually doesn't matter; decide in step 7.
+3. **Streams** every committed change as one event.
+4. **Tracks position** — stores last-processed LSN as a Kafka Connect
+   offset, confirms it back to the slot so Postgres can free WAL. Resumes
+   from the last stored offset after a crash → at-least-once redelivery.
+
+Raw event shape: topic `<prefix>.<schema>.<table>`, envelope with
+`before` / `after` / `source` (lsn, txId, table…) / `op` (`c`/`u`/`d`/`r`)
+/ `ts_ms`. Fine for table replication, **wrong shape for domain events**
+(consumers want `OrderCreated` keyed by order ID) → Outbox Event Router
+SMT reshapes it.
+
+Deployment modes:
+| Mode | What | When |
+|---|---|---|
+| **Kafka Connect source connector** | Plugin in a Connect cluster | Standard when target is Kafka — **ours** |
+| Debezium Server | Standalone app, non-Kafka sinks | Messaging isn't Kafka |
+| Debezium Engine | Embedded library | Niche; you own offsets/failover |
+
+Why it over alternatives:
+- **Hand-written polling publisher** — legitimate, but polling
+  load/latency, published flags + cleanup, multi-instance coordination,
+  relay logic back in the service.
+- **Hand-written logical-decoding consumer** — reimplements snapshots,
+  slots, offsets, reconnects, schema changes, failover edge cases.
+- **Kafka Connect JDBC Source** — query-based CDC, inherits its problems.
+- **Managed cloud CDC** (AWS DMS, Confluent Cloud…) — valid in production;
+  several are Debezium under the hood.
+De facto standard for log-based CDC into Kafka; Outbox Event Router is
+first-class.
+
+Costs:
+- Another component to run (Connect cluster, config, monitoring).
+- DB privileges: connector user needs `REPLICATION` + publication
+  rights — use a dedicated least-privilege user, not the app's.
+- Replication slot monitoring (WAL retention gotcha).
+- Outbox table schema becomes a contract with the Event Router.
+- Effectively at-least-once — Kafka Connect exactly-once source support
+  (KIP-618) only covers what lands in Kafka; consumers still need
+  idempotency.
+
 ## Commands run
 <!-- in order, as they're run -->
 TBD
