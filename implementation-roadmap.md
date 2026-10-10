@@ -228,6 +228,7 @@ a listed pattern doesn't feel justified by what you're actually building, skip i
 - `opentelemetry-spring-boot-starter` on every service, `OTEL_EXPORTER_OTLP_ENDPOINT` env var
 - Verify Kafka header trace propagation across the SAGA chain — one trace, multiple services, visible in Seq
 - Structured JSON logs routed through the same pipe
+- *(From M3)* Debezium / Postgres replication slot health: alert on slot lag (`pg_replication_slots` — retained WAL behind `confirmed_flush_lsn`) and on inactive slots. An abandoned slot retains WAL until the disk fills — classic production incident. Note this is a **metric**, not a trace or log — Seq isn't a metrics store, so this needs a metrics backend decision (e.g., Prometheus + Grafana fed by the OTel Collector) when M9 starts.
 
 **Definition of done:** trigger the M7 SAGA failure scenario, pull up Seq, see one connected trace spanning `order-service → Kafka → payment-service → Kafka → inventory-service` with the compensating transaction visible.
 
