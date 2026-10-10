@@ -80,6 +80,10 @@ verified, before moving to the next milestone:
     - **What was built** — concrete artifacts (files, services, configs)
     - **Decisions & trade-offs** — real alternatives considered and why one
       was chosen, not just what was done
+    - **Concepts & Q&A** — the technical concepts discussed during the
+      milestone (each a short distilled explanation), plus the developer's
+      questions and their answers. Written as reference material worth
+      re-reading later, not a chat transcript. Applies from M3 onward.
     - **Verification** — how the Definition of Done was actually confirmed
     - **Commands reference** — every command run, in order, runnable as a
       reference later
@@ -114,8 +118,8 @@ To avoid losing that: while a milestone is in progress, keep
 `docs/milestones/M<n>-WIP.md` — created when the milestone starts,
 considered at every commit made during the milestone and updated
 whenever that commit actually has something worth capturing (a step
-confirmed working, a design decision made and why, an error hit and how
-it was resolved). Not every commit needs an entry — some are purely
+confirmed working, a design decision made and why, a concept discussed
+or question answered, an error hit and how it was resolved). Not every commit needs an entry — some are purely
 mechanical and add nothing new — but every commit is a prompt to check,
 so nothing worth keeping slips through unrecorded. Not reconstructed
 from memory at the end. It's raw material, not polished prose — the same
