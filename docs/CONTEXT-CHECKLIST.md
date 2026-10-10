@@ -26,7 +26,7 @@ assistant — without re-reading every milestone doc in full.
 |---|---|---|
 | M0 — Foundations | ✅ Done | `docs/milestones/M0-foundations.md` |
 | M1 — Kafka Core | ✅ Done | `docs/milestones/M1-kafka-core.md` |
-| M2 — order-service (Hexagonal skeleton) | 🔄 In progress — domain, `OrderRepository` port + in-memory adapter, `CreateOrderUseCase`, Kafka producer adapter built (not yet tested end-to-end); `OrderController` (REST), OpenAPI, tests, ArchUnit rules still open | `docs/milestones/M2-WIP.md` |
+| M2 — order-service (Hexagonal skeleton) | ✅ Done | `docs/milestones/M2-order-service.md` |
 | M3–M10 | ⏳ Not started | — |
 
 ## How to start the stack
@@ -55,6 +55,8 @@ See [`docs/CLAUDE-CODE-SETUP.md`](./CLAUDE-CODE-SETUP.md#starting-a-session-ever
 - `kafka-avro-console-producer` lives in the `schema-registry` container, not `kafka`.
 - Avro `decimal` fields can't be hand-typed via the CLI console producer — use a throwaway topic/schema for CLI smoke tests, never the real one.
 - PowerShell + Docker + embedded JSON quoting is fragile — prefer `docker cp` + an interactive `docker exec -it <container> bash` shell over trying to escape everything inline.
+- Service modules here extend this project's own parent POM, not `spring-boot-starter-parent` — so they don't get the `<parameters>true</parameters>` compiler flag a stock Spring Boot project gets for free. Without it, `@PathVariable`/`@RequestParam` resolution breaks (parameter names stripped from bytecode). Already fixed project-wide via the root `pom.xml`'s `maven-compiler-plugin`, so new modules inherit it — but worth knowing why if it ever looks broken again.
+- `mvn -pl <module> test` only builds that module in isolation, resolving sibling modules (`sandbox-arch-rules`, `sandbox-avro-schemas`) from whatever's already in `~/.m2` — stale if a sibling was only just recompiled, not installed. Use `mvn -pl <module> -am test` (`--also-make`) whenever a module under test depends on a sibling that changed in the same session.
 
 ## Next up
-M2 — `OrderController` (REST) wiring the existing `CreateOrderUseCase` into an actual `POST /orders` flow; then verify the Kafka producer end-to-end for the first time (register `OrderCreated`'s schema, publish via a real request, consume from the topic to confirm it lands) — this hasn't been tested yet. After that: `springdoc-openapi` (Swagger UI + Scalar), unit tests for `Order`, and the first ArchUnit rules.
+M3 — Real Persistence + Outbox Pattern: `docker-compose.outbox.yml` (Postgres, Flyway), `JpaOrderRepository` swapping in behind the existing `OrderRepository` port, `Order.confirm()` state transition, the Transactional Outbox itself (same-TX write, Debezium + Kafka Connect, Outbox Event Router SMT), and the first Testcontainers integration test. See `implementation-roadmap.md`'s M3 section for the full scope and Definition of Done.

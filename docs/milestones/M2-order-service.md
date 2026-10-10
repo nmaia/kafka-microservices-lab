@@ -1,112 +1,136 @@
-# M2 — order-service (Hexagonal skeleton) — WIP
+# M2 — order-service (Hexagonal skeleton)
 
-**Status:** in progress (started `ef71acb`, 2026-09-09). This is scaffolding, not a
-permanent doc — see `docs/WORKING-AGREEMENTS.md`'s "Cross-session continuity"
-section. Once M2's Definition of Done is verified, this file is promoted
-(renamed + distilled) into `docs/milestones/M2-order-service.md`.
+**Status:** ✅ Done
 
 ## Goal
 Prove the Hexagonal package structure, rich domain, and a real Kafka producer —
 with almost no business complexity yet. (`implementation-roadmap.md`)
 
-## What was built so far
-- Hexagonal package skeleton: `domain/`, `application/`,
-  `adapters/out/{kafka,persistence}`, `config/` (`ef71acb`, `aae1905`, `b6467c7`)
+## What was built
+
+### Domain
 - `Order` aggregate — factory-method creation via `Order.create()`, validates
   `customerId`/`items`/`currency`, computes `totalAmount`, raises
   `OrderCreatedEvent`; `OrderLine` value object; `OrderCreatedEvent`/
   `DomainEvent` (sealed)
-- `OrderRepository` port + `InMemoryOrderRepository` adapter
-  (`ConcurrentHashMap`-backed, temporary stand-in for M3's JPA adapter)
-- `DomainEventPublisher` port + `KafkaOrderEventPublisher` adapter — publishes
-  `OrderCreated` Avro events via `KafkaTemplate<String, OrderCreated>`, keyed
-  by `orderId`
-- `OrderEventMapper` (manual domain → Avro mapping)
+- `OrderRepository` port, with `InMemoryOrderRepository`
+  (`ConcurrentHashMap`-backed, explicitly temporary — a stand-in for M3's
+  JPA adapter, shaped so the port and `CreateOrderUseCase` need zero change
+  when that swap happens)
+
+### Application
 - `CreateOrderUseCase` + `CreateOrderCommand` — orchestrates
   `Order.create()` → `OrderRepository.save()` → publish pulled domain events
+- `OrderNotFoundException` — thrown from the controller's GET lookup,
+  mapped to 404
+
+### Adapters — Kafka (out)
+- `DomainEventPublisher` port + `KafkaOrderEventPublisher` adapter —
+  publishes `OrderCreated` Avro events via `KafkaTemplate<String,
+  OrderCreated>`, keyed by `orderId`
+- `OrderEventMapper` (manual domain → Avro mapping)
 - `KafkaProducerConfig` (typed `ProducerFactory`/`KafkaTemplate` beans),
   `KafkaTopicsProperties` (typed `app.kafka.topics.*` binding)
-- `application.yml` Kafka producer config: `acks=all`,
-  `enable.idempotence=true`, `auto.register.schemas=false`
-- `.env.example` real entries for `KAFKA_BOOTSTRAP_SERVERS`,
-  `SCHEMA_REGISTRY_URL`, `ORDER_EVENTS_TOPIC`
-- Spotless + PMD bound into the Maven lifecycle (`validate`/`verify` phases)
-  at the parent POM; `pmd-ruleset.xml` `excludeRoots` for Avro-generated
-  sources (`4327802`)
-- `spring-boot-starter-validation` added to `order-service/pom.xml`
-- REST DTOs in `adapters/in/rest/dto/` — `CreateOrderRequest`/`OrderLineRequest`
+- `application.yml` producer config: `acks=all`, `enable.idempotence=true`,
+  `auto.register.schemas=false`; `.env.example` entries for
+  `KAFKA_BOOTSTRAP_SERVERS`, `SCHEMA_REGISTRY_URL`, `ORDER_EVENTS_TOPIC`
+
+### Adapters — REST (in)
+- DTOs in `adapters/in/rest/dto/` — `CreateOrderRequest`/`OrderLineRequest`
   (inbound, Bean-Validation-annotated: `@NotBlank`/`@NotEmpty`/`@Positive`),
   `OrderResponse`/`OrderLineResponse` (outbound), all anemic records
-- `OrderRestMapper` (`adapters/in/rest/`) — `CreateOrderRequest → CreateOrderCommand`,
+- `OrderRestMapper` — `CreateOrderRequest → CreateOrderCommand`,
   `Order → OrderResponse`, manual (same reasoning as `OrderEventMapper`)
-- `OrderNotFoundException` (`application/`) — thrown from the controller's
-  GET lookup, mapped to 404
-- `OrderController` (`adapters/in/rest/`) — `POST /orders` (201 + `Location`,
-  delegates to `CreateOrderUseCase`) and `GET /orders/{orderId}` (delegates
-  directly to `OrderRepository`, no dedicated query use case for a plain
-  unconditional lookup)
-- `OrderRestExceptionHandler` (`@RestControllerAdvice`) — `IllegalArgumentException`
-  → 400, `OrderNotFoundException` → 404, both as RFC 7807 `ProblemDetail`
-  (`spring.mvc.problemdetails.enabled: true`)
-- `server.port: ${SERVER_PORT:8082}` in `application.yml` / `SERVER_PORT=8082`
-  in `.env.example` — `order-service` can't share 8080 with Kafka UI
-- `app.kafka.topics.order-events` binding actually populated in
-  `application.yml` (was previously just a comment with no key under it)
+- `OrderController` — `POST /orders` (201 + `Location`, delegates to
+  `CreateOrderUseCase`) and `GET /orders/{orderId}` (delegates directly to
+  `OrderRepository` — a plain unconditional lookup has no orchestration
+  logic to justify a use case)
+- `OrderRestExceptionHandler` (`@RestControllerAdvice`) —
+  `IllegalArgumentException` → 400, `OrderNotFoundException` → 404, both as
+  RFC 7807 `ProblemDetail` (`spring.mvc.problemdetails.enabled: true`)
+- `server.port: ${SERVER_PORT:8082}` — `order-service` can't share 8080
+  with Kafka UI
 
-- `maven-compiler-plugin` (`3.15.0`, pinned explicitly) added to the root
-  `pom.xml`'s `<build><plugins>` with `<parameters>true</parameters>` —
-  fixes `@PathVariable`/`@RequestParam` resolution for every module (see
-  Troubleshooting log)
-- `OrderTest` (`order-service/src/test/java/dev/sandbox/orderservice/domain/`)
-  — 17 tests, JUnit 5 + AssertJ, grouped into three `@Nested` classes:
-  `Create` (field assignment, total calculation, `OrderCreatedEvent`
-  raising), `Validation` (parameterized null/blank/invalid-currency
-  matrices for `customerId`/`items`/`currency`), and
+### API documentation
+- `springdoc-openapi-starter-webmvc-api` (spec generation only, pinned to
+  the 2.x line — springdoc's MAJOR version tracks Spring Boot's MAJOR
+  release, and this project is on Spring Boot 3.3.x, not 4.x) generates the
+  OpenAPI 3 spec at `/v3/api-docs`
+- `ScalarController` (`adapters/in/rest/`) renders it via Scalar's standard
+  CDN-script integration (no first-party Java/Spring package exists) —
+  **Scalar alone, not Swagger UI**, a deliberate single-UI choice (see
+  Decisions below)
+- `springdoc.api-docs.enabled` (env-backed via `SPRINGDOC_API_DOCS_ENABLED`,
+  default `true`) gates both the spec and `ScalarController`, via a
+  matching `@ConditionalOnProperty` on the controller — `/scalar` and
+  `/v3/api-docs` both actually disappear (404) when disabled, not just
+  render broken
+
+### Testing & architecture rules
+- `OrderTest` — 17 tests, JUnit 5 + AssertJ, three `@Nested` classes:
+  `Create` (field assignment, total calculation, event raising),
+  `Validation` (parameterized null/blank/invalid-currency matrices), and
   `EqualsAndHashCode` (DDD identity contract, including the same-`orderId`
   case via reflection on the private constructor — see Decisions)
-- First ArchUnit rules: `SandboxArchRules` (`sandbox-arch-rules`) gained
-  three parametrized rule methods — `domainDoesNotDependOnSpring`,
-  `domainDoesNotDependOnAdapters`, `domainDoesNotDependOnJpa` (the last one
-  forward-looking, ahead of M3's `JpaOrderRepository`). `order-service`
-  gained `HexagonalArchitectureTest` (`@AnalyzeClasses` +
-  `@ArchTest`-annotated `static final ArchRule` fields, per ArchUnit's own
-  JUnit 5 integration pattern), invoking all three against
-  `dev.sandbox.orderservice`. Verified with a negative-control check (see
-  Verification) — not just a pass, confirmed to actually catch a
-  violation.
+- First ArchUnit rules in `sandbox-arch-rules`: `domainDoesNotDependOnSpring`,
+  `domainDoesNotDependOnAdapters`, `domainDoesNotDependOnJpa` (forward-
+  looking, ahead of M3), as parametrized static methods reused by every
+  future service's test suite. `order-service` gained
+  `HexagonalArchitectureTest` invoking all three against
+  `dev.sandbox.orderservice`
 
-## Not yet built (open for M2)
-- `springdoc-openapi` (Swagger UI + Scalar) — not in `order-service/pom.xml`
+### Build tooling (project-wide, landed during M2)
+- Spotless + PMD bound into the Maven lifecycle (`validate`/`verify`
+  phases) at the parent POM; `pmd-ruleset.xml` `excludeRoots` for
+  Avro-generated sources
+- `maven-compiler-plugin` (`3.15.0`, pinned) added with
+  `<parameters>true</parameters>` — fixes `@PathVariable`/`@RequestParam`
+  resolution for every module (see Troubleshooting)
 
 ## Decisions & trade-offs
-- `CreateOrderCommand` as its own record rather than a long parameter list on
-  `CreateOrderUseCase.execute()` — justified by Clean Code's parameter-object
-  guideline (`docs/REFERENCES.md`, `b6467c7`); also decouples the use case's
-  contract from `OrderController`'s eventual REST request shape.
+- **Scalar-only API documentation, not Swagger UI + Scalar as originally
+  scoped** (`implementation-roadmap.md`'s M2 section and
+  `sandbox-context-document.md` §4.5 both originally said "both," since
+  that's a project-wide convention, not an `order-service`-only choice —
+  both updated to match this decision). In a real service you ship one
+  documentation renderer, not two competing ones over the same spec;
+  running both only made sense as a side-by-side comparison, and Swagger
+  UI's behavior is already familiar here, so there's nothing left to learn
+  by including it. Scalar alone is both the real-world-correct call and
+  the one actually worth building. Mechanically, this means
+  `springdoc-openapi-starter-webmvc-api` (spec generation only) rather
+  than the `-webmvc-ui` variant — no reason to pull in Swagger UI's
+  bundled assets just to suppress them. Scalar itself has no first-party
+  Java/Spring package, so it's embedded via its standard CDN-script
+  integration, served from a small `@Controller` gated by the same
+  `springdoc.api-docs.enabled` property as the spec endpoint, rather than
+  a plain static resource (which wouldn't respect that toggle).
+- `CreateOrderCommand` as its own record rather than a long parameter list
+  on `CreateOrderUseCase.execute()` — justified by Clean Code's
+  parameter-object guideline (`docs/REFERENCES.md`); also decouples the
+  use case's contract from `OrderController`'s eventual REST request
+  shape.
 - `DomainEvent` sealed + pattern-matching `switch` in
   `KafkaOrderEventPublisher.publish()` instead of `instanceof` chains or a
   visitor — the compiler rejects the adapter if a new event type is added
   without a matching `case`, no default/throw branch needed.
-- `OrderEventMapper` written by hand instead of MapStruct — Avro's generated
-  builder pattern doesn't map cleanly onto MapStruct's constructor/setter
-  inference, and there's only one mapping so far to justify the
-  annotation-processor setup. Revisit once a second mapping exists
-  (`docs/REFERENCES.md` flags MapStruct as a watch-for-it for M3/M4).
-- `InMemoryOrderRepository` is explicitly temporary — the `OrderRepository`
-  port is shaped so M3's `JpaOrderRepository` swaps in with zero change to
-  the port or `CreateOrderUseCase`.
-- `auto.register.schemas=false` — schemas are registered by hand via Kafka UI
-  as a reviewed step, mirroring a real CI pipeline gating schema changes,
-  rather than letting the producer silently register an unreviewed schema at
-  runtime.
-- `acks=all` and `enable.idempotence=true` set explicitly in
-  `application.yml` even though they're already the Kafka 3.x client
-  defaults — durability/dedup guarantees should be visible in config, not
-  implied.
+- `OrderEventMapper` written by hand instead of MapStruct — Avro's
+  generated builder pattern doesn't map cleanly onto MapStruct's
+  constructor/setter inference, and there's only one mapping so far to
+  justify the annotation-processor setup. Revisit once a second mapping
+  exists (`docs/REFERENCES.md` flags MapStruct as a watch-for-it for
+  M3/M4).
+- `auto.register.schemas=false` — schemas are registered by hand via Kafka
+  UI as a reviewed step, mirroring a real CI pipeline gating schema
+  changes, rather than letting the producer silently register an
+  unreviewed schema at runtime.
+- `acks=all` and `enable.idempotence=true` set explicitly even though
+  they're already the Kafka 3.x client defaults — durability/dedup
+  guarantees should be visible in config, not implied.
 - PMD's `excludeRoots` (not per-violation suppression) for
   `target/generated-sources/avro` — generated code isn't hand-edited to
-  satisfy a style rule, so excluding the source root is correct. Found as a
-  real issue (124 violations) once Spotless/PMD were bound into the
+  satisfy a style rule, so excluding the source root is correct. Found as
+  a real issue (124 violations) once Spotless/PMD were bound into the
   lifecycle, not designed preemptively.
 - Spotless/PMD declared under the parent POM's `<build><plugins>` (not
   `pluginManagement`) so every child module inherits *and executes* them
@@ -115,77 +139,75 @@ with almost no business complexity yet. (`implementation-roadmap.md`)
   violation.
 - REST DTOs split into `adapters/in/rest/dto/`, separate from
   `OrderController`/`OrderRestMapper`/the exception advice which stay flat
-  in `adapters/in/rest/` — documented in `docs/CODING-STYLE.md`'s new
+  in `adapters/in/rest/` — documented in `docs/CODING-STYLE.md`'s
   "Subpackaging within adapters" section; earned by the mix of three
   structural roles in one folder, not file count alone.
 - `OrderRestMapper` kept as its own `@Component` (not inlined as private
-  methods on `OrderController`) — discussed explicitly rather than
-  defaulted to, for symmetry with `OrderEventMapper` on the Kafka side.
-- `GET /orders/{orderId}` reads `OrderRepository` directly rather than
-  through a use case — a plain, unconditional repository lookup has no
-  orchestration logic to justify one; consistent with Hexagonal (inbound
-  adapters may depend on ports directly, not only through use cases).
-- `OrderTest` (`Order`'s first unit test class) does **not** introduce a
-  shared test-data builder — same "earn it, don't design for hypothetical
-  future" reasoning already applied to MapStruct and the DTO
-  subpackaging. It's the first test class in the project; a builder is
-  premature until a second test class (e.g. `CreateOrderUseCase`'s)
+  methods on `OrderController`) — for symmetry with `OrderEventMapper` on
+  the Kafka side.
+- `OrderTest` does **not** introduce a shared test-data builder — same
+  "earn it, don't design for hypothetical future" reasoning already
+  applied to MapStruct and the DTO subpackaging. It's the first test class
+  in the project; a builder is premature until a second test class
   actually duplicates the same order-construction boilerplate.
 - `EqualsAndHashCode`'s same-`orderId`-different-fields case uses
   reflection (`Constructor.setAccessible(true)`) to invoke `Order`'s
   private constructor directly, rather than skipping the case. `create()`
   always assigns a fresh `orderId`, so it's the only way to get two
-  instances sharing one — and without it, the actual DDD identity
-  contract the `equals()` override exists for (same `orderId` ⇒ equal,
-  regardless of every other field) would go unverified. Deliberate
-  trade-off: a test that reaches past the public API, chosen over leaving
-  the override's real behavior untested.
+  instances sharing one — and without it, the actual DDD identity contract
+  the `equals()` override exists for (same `orderId` ⇒ equal, regardless
+  of every other field) would go unverified. Deliberate trade-off: a test
+  that reaches past the public API, chosen over leaving the override's
+  real behavior untested.
 - ArchUnit rules defined as **parametrized static methods** in the shared
-  `sandbox-arch-rules` module (`domainDoesNotDependOnSpring(basePackage)`,
-  etc.) rather than hardcoded against `dev.sandbox.orderservice` — chosen
-  deliberately over the simpler "just write them in `order-service`'s test
-  suite" option, since `sandbox-arch-rules`'s whole purpose (per its own
-  module description) is being reused by every future service's test
-  suite (`payment-service`, `inventory-service`, ...) without
-  reimplementing the same checks.
-- `HexagonalArchitectureTest`'s `@AnalyzeClasses` uses
-  `importOptions = ImportOption.DoNotIncludeTests.class` — without it,
-  ArchUnit also imports `order-service`'s own test classes (e.g.
-  `OrderTest`, which sits in the `domain` package) and checks *them*
-  against the rules too. Test code legitimately uses JUnit/AssertJ/
-  reflection; these rules exist to police production code.
+  `sandbox-arch-rules` module rather than hardcoded against
+  `dev.sandbox.orderservice` — chosen deliberately over the simpler "just
+  write them in `order-service`'s test suite" option, since
+  `sandbox-arch-rules`'s whole purpose is being reused by every future
+  service's test suite without reimplementing the same checks.
+- `HexagonalArchitectureTest`'s `@AnalyzeClasses` uses `importOptions =
+  ImportOption.DoNotIncludeTests.class` — without it, ArchUnit also
+  imports `order-service`'s own test classes (e.g. `OrderTest`, which sits
+  in the `domain` package) and checks *them* against the rules too. Test
+  code legitimately uses JUnit/AssertJ/reflection; these rules exist to
+  police production code.
 - `domainDoesNotDependOnJpa` was added even though nothing in
   `order-service` uses JPA yet — deliberately forward-looking, so the
   constraint is locked in *before* M3 introduces `JpaOrderRepository`,
   rather than relying on nobody putting `@Entity` on `Order` itself later.
 
-## Verification
+## Verification (Definition of Done)
 - **`POST /orders` → Kafka: confirmed end-to-end.** A real request
   produced `201`, a correct `Location` header, and the correct computed
   total (`2 × 19.99 = 39.98`); the resulting `OrderCreated` message was
   confirmed present and correctly decoded on the `order-events` topic via
-  Kafka UI (http://localhost:8080). M2's core Kafka-producer DoD is met.
-- **`GET /orders/{orderId}`: confirmed working.** After the
-  `maven-compiler-plugin` fix, a fresh `POST` (`201`,
-  `orderId=01a0bfba-56ba-7700-b90a-a4038c0b9442`) followed by `GET` on that
-  same id returned `200` with a body matching the `POST` response exactly.
-  Both `OrderController` endpoints are verified end to end; M2's core DoD
-  is met.
+  Kafka UI (http://localhost:8080).
+- **`GET /orders/{orderId}`: confirmed working.** A fresh `POST` followed
+  by `GET` on that same id returned `200` with a body matching the `POST`
+  response exactly.
 - **`Order` unit tests: confirmed.** `OrderTest` (17 tests — creation,
   validation, identity) passes via `mvn -pl order-service test`. The
-  in-memory repository itself remains untested (no dedicated
-  `InMemoryOrderRepositoryTest` — its only real behavior is delegating to
-  `ConcurrentHashMap`, exercised indirectly via the end-to-end `POST`/`GET`
-  checks above).
+  in-memory repository itself remains untested directly (only real
+  behavior is delegating to `ConcurrentHashMap`, exercised indirectly via
+  the end-to-end `POST`/`GET` checks above).
+- **`springdoc-openapi` + Scalar: confirmed, both enabled and disabled.**
+  With `SPRINGDOC_API_DOCS_ENABLED` unset (default `true`):
+  `http://localhost:8082/scalar` rendered Scalar's UI showing both
+  `OrderController` operations (`POST /orders`, `GET /orders/{orderId}`)
+  and all four DTO schemas; `http://localhost:8082/v3/api-docs` returned
+  the matching OpenAPI 3.1.0 JSON. With `$env:SPRINGDOC_API_DOCS_ENABLED =
+  "false"` set before `spring-boot:run`: both URLs returned a proper `404`
+  `ProblemDetail` — confirming `ScalarController`'s route actually
+  disappears rather than rendering a page against a disabled spec, and
+  springdoc's own conditional does the same for the spec endpoint itself.
 - **ArchUnit rules: confirmed, with a negative control.** All three
   `HexagonalArchitectureTest` rules pass against current `order-service`
   code (`mvn -pl order-service -am test`, 20/20 total incl. `OrderTest`).
-  Verified the rules aren't vacuously passing (e.g. from a package-name
-  typo matching zero classes): temporarily added a genuinely-used
-  `@Component` import to `Order.java`, reran the build, and confirmed
-  `domainDoesNotDependOnSpring` failed with a violation message correctly
-  naming `Order` and the `because(...)` reason — then reverted and
-  confirmed a clean 20/20 pass again.
+  Verified the rules aren't vacuously passing: temporarily added a
+  genuinely-used `@Component` import to `Order.java`, reran the build, and
+  confirmed `domainDoesNotDependOnSpring` failed with a violation message
+  correctly naming `Order` and the `because(...)` reason — then reverted
+  and confirmed a clean 20/20 pass again.
 
 ## Commands reference
 
@@ -203,10 +225,11 @@ mvn -pl order-service spring-boot:run
 mvn -pl order-service spotless:apply
 mvn -pl order-service compile
 
-# 3. In a second terminal, write the POST body to request.json (repo root).
-#    Don't inline the JSON directly into curl.exe -d — PowerShell re-quotes
-#    arguments for native exes and corrupts embedded double quotes (see
-#    Troubleshooting log). A single-quoted here-string sidesteps that:
+# 3. In a second terminal, write the POST body to request.json (repo root,
+#    gitignored). Don't inline the JSON directly into curl.exe -d —
+#    PowerShell re-quotes arguments for native exes and corrupts embedded
+#    double quotes (see Troubleshooting log). A single-quoted here-string
+#    sidesteps that:
 @'
 {"customerId":"cust-123","items":[{"sku":"SKU-1","quantity":2,"unitPrice":19.99}],"currency":"USD"}
 '@ | Set-Content -Encoding utf8 request.json
@@ -225,8 +248,23 @@ curl.exe -i http://localhost:8082/orders/<orderId>
 #    see Troubleshooting log's Schema Registry entry if it 404s).
 ```
 
-**Running the full test suite (unit + ArchUnit)**, after changing anything in
-`sandbox-arch-rules` as well as `order-service`:
+**Verifying `springdoc-openapi` + Scalar, both enabled and disabled:**
+
+```powershell
+# Enabled (default) - from the repo root
+mvn -pl order-service spring-boot:run
+# Then in a browser: http://localhost:8082/scalar and
+# http://localhost:8082/v3/api-docs should both render.
+
+# Ctrl+C to stop, then disabled - same terminal, so the var only affects
+# this run:
+$env:SPRINGDOC_API_DOCS_ENABLED = "false"
+mvn -pl order-service spring-boot:run
+# Both URLs above should now 404.
+```
+
+**Running the full test suite (unit + ArchUnit)**, after changing anything
+in `sandbox-arch-rules` as well as `order-service`:
 
 ```powershell
 # -am (--also-make): builds order-service together with the sibling
@@ -317,8 +355,7 @@ mvn -pl order-service -am test
     and the in-memory store are independent; an id present in one doesn't
     imply it's present in the other. Confirmed the actual fix by POSTing a
     **new** order in the current run and immediately `GET`-ing that same
-    id: `201` then `200`, response bodies matching exactly
-    (`orderId=01a0bfba-56ba-7700-b90a-a4038c0b9442`).
+    id: `201` then `200`, response bodies matching exactly.
 - **`order-service` test build failed with `cannot find symbol` for the new
   `SandboxArchRules` methods, right after `sandbox-arch-rules` had just
   compiled clean.** Not a code error — a Maven multi-module reactor gotcha.

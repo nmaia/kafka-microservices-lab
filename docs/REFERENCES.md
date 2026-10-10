@@ -101,9 +101,16 @@ well-regarded source offers better or more current thinking than an older
 
 ## API Documentation
 - **springdoc-openapi's official documentation (springdoc.org)** — the
-  direct reference for wiring OpenAPI 3 generation, Swagger UI, and Scalar
-  UI into every REST-exposing service, starting with `order-service` in
-  M2. Chosen over the older SpringFox, which is no longer maintained.
+  direct reference for wiring OpenAPI 3 generation into every
+  REST-exposing service, starting with `order-service` in M2 (the
+  `-webmvc-api` artifact — spec generation only, no bundled UI). Chosen
+  over the older SpringFox, which is no longer maintained.
+- **Scalar's official documentation (scalar.com/docs)** — the reference
+  for embedding Scalar's API reference UI over that generated spec, via
+  its standard CDN-script integration (no first-party Java/Spring package
+  exists). Chosen as the sole documentation renderer over Swagger UI
+  starting M2 — a deliberate single-UI, real-world-shaped choice; see
+  `docs/milestones/M2-order-service.md`.
 
 ## Change Data Capture
 - **Debezium's official documentation (debezium.io)** — living reference

@@ -244,22 +244,32 @@ that pattern internally — redundant to re-wrap).
 
 ### 4.5 API documentation
 
-Every service exposing a REST API uses **springdoc-openapi**, generating an
-OpenAPI 3 spec from controllers/DTOs/Bean Validation annotations at
+Every service exposing a REST API uses **springdoc-openapi** (the
+`-webmvc-api` artifact — spec generation only, no bundled UI) to generate
+an OpenAPI 3 spec from controllers/DTOs/Bean Validation annotations at
 runtime — chosen over the older SpringFox (effectively dead since 2020,
-incompatible with Spring Boot 3.x). Both **Swagger UI** and **Scalar UI**
-are exposed over the same generated spec, giving a choice of renderer
-without maintaining two separate doc pipelines.
+incompatible with Spring Boot 3.x). The spec is rendered by **Scalar
+alone**, not Swagger UI — a deliberate single-UI choice: a real service
+ships one documentation renderer, not two competing ones, and Swagger UI's
+behavior is already well understood on this team, so Scalar is both the
+real-world-correct call and the one actually worth building for the
+learning goal. Scalar has no first-party Java/Spring package, so it's
+embedded via its standard CDN-script integration (the same approach Scalar
+documents for any framework without a dedicated package), served from a
+small controller rather than a static resource so it can be gated
+identically to the spec itself (see below).
 
 Doc availability is **environment-gated**, not always-on: enabled for
 local/dev, disabled by default for anything resembling production
-(`springdoc.api-docs.enabled=false`, which also takes the UI down since it
-depends on that same spec endpoint) — an unauthenticated, fully-documented
+(`springdoc.api-docs.enabled=false`, which also takes Scalar down since its
+controller checks the same property) — an unauthenticated, fully-documented
 map of every endpoint and payload shape is not something to expose by
 default. This follows the same env-var-for-values convention established
-in `CONFIGURATION.md`. First established in M2, applies to every
-REST-exposing service thereafter (`command-api`, `query-api`,
-`api-gateway`).
+in `CONFIGURATION.md`. First established in M2 (originally scoped as
+Swagger UI + Scalar both — revised to Scalar-only while actually building
+`order-service`; see `docs/milestones/M2-order-service.md` for the full
+reasoning), applies to every REST-exposing service thereafter
+(`command-api`, `query-api`, `api-gateway`).
 
 ### 4.6 Object mapping
 
