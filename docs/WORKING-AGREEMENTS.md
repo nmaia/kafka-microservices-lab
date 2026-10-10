@@ -58,6 +58,16 @@ complexity **selectively, not universally**:
   (per the pairing style above), not bolted on after the fact — complexity
   is part of the design decision, not a lint pass at the end.
 
+## Documentation, when a milestone starts
+Before the first implementation step of a milestone:
+
+1. Create `docs/milestones/M<n>-WIP.md` (see "Cross-session continuity"
+   below).
+2. Mark the milestone 🚧 In progress in both `README.md`'s Status table
+   and `docs/CONTEXT-CHECKLIST.md`'s status table, and point
+   `CONTEXT-CHECKLIST.md`'s "Next up" line at the WIP file.
+3. Commit, e.g. `git commit -m "📝 Start M<n>"`.
+
 ## Documentation, after every milestone
 Once a milestone's Definition of Done (per `implementation-roadmap.md`) is
 verified, before moving to the next milestone:

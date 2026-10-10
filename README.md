@@ -17,7 +17,7 @@ schemas into without fighting the project's structure.
 | M0 | Foundations — repo, build tooling, CI skeleton | ✅ Done |
 | M1 | Kafka Core — single broker (KRaft), Schema Registry, Kafka UI | ✅ Done |
 | M2 | First Spring Boot service (`order-service`, Hexagonal skeleton) | ✅ Done |
-| M3 | Real persistence + Transactional Outbox | ⏳ Not started |
+| M3 | Real persistence + Transactional Outbox | 🚧 In progress |
 | M4 | CQRS split | ⏳ Not started |
 | M5 | DLQ + resilience | ⏳ Not started |
 | M6 | Multi-broker + API Gateway | ⏳ Not started |

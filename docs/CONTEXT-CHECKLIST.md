@@ -27,7 +27,8 @@ assistant — without re-reading every milestone doc in full.
 | M0 — Foundations | ✅ Done | `docs/milestones/M0-foundations.md` |
 | M1 — Kafka Core | ✅ Done | `docs/milestones/M1-kafka-core.md` |
 | M2 — order-service (Hexagonal skeleton) | ✅ Done | `docs/milestones/M2-order-service.md` |
-| M3–M10 | ⏳ Not started | — |
+| M3 — Real Persistence + Outbox Pattern | 🚧 In progress | `docs/milestones/M3-WIP.md` |
+| M4–M10 | ⏳ Not started | — |
 
 ## How to start the stack
 ```powershell
@@ -59,4 +60,5 @@ See [`docs/CLAUDE-CODE-SETUP.md`](./CLAUDE-CODE-SETUP.md#starting-a-session-ever
 - `mvn -pl <module> test` only builds that module in isolation, resolving sibling modules (`sandbox-arch-rules`, `sandbox-avro-schemas`) from whatever's already in `~/.m2` — stale if a sibling was only just recompiled, not installed. Use `mvn -pl <module> -am test` (`--also-make`) whenever a module under test depends on a sibling that changed in the same session.
 
 ## Next up
-M3 — Real Persistence + Outbox Pattern: `docker-compose.outbox.yml` (Postgres, Flyway), `JpaOrderRepository` swapping in behind the existing `OrderRepository` port, `Order.confirm()` state transition, the Transactional Outbox itself (same-TX write, Debezium + Kafka Connect, Outbox Event Router SMT), and the first Testcontainers integration test. See `implementation-roadmap.md`'s M3 section for the full scope and Definition of Done.
+M3 in progress — see `docs/milestones/M3-WIP.md` for the current step and notes.
+Scope: `docker-compose.outbox.yml` (Postgres, Flyway), `JpaOrderRepository` swapping in behind the existing `OrderRepository` port, `Order.confirm()` state transition, the Transactional Outbox itself (same-TX write, Debezium + Kafka Connect, Outbox Event Router SMT), and the first Testcontainers integration test. See `implementation-roadmap.md`'s M3 section for the full scope and Definition of Done.
