@@ -15,15 +15,17 @@ Outbox pattern correctly.
 - [ ] Same outbox event delivered twice → no duplicate business effect
 
 ## Progress
-- [x] 1 - WIP file created
-- [ ] 2 - `docker-compose.outbox.yml` — Postgres + Flyway migrations
-- [ ] 3 - `JpaOrderRepository` behind the existing `OrderRepository` port
-- [ ] 4 - `Order.confirm()` state transition + domain event
-- [ ] 5 - Outbox write in same TX + ArchUnit rule
-- [ ] 6 - First Testcontainers integration test
-- [ ] 7 - Debezium + Kafka Connect + Outbox Event Router SMT
-- [ ] 8 - Redelivery idempotency + kill-mid-request verification
-- [ ] 9 - Outbox retention purge job (see D2)
+| Step | Description | Status |
+|---|---|---|
+| 1 | WIP file created | ✅ Done |
+| 2 | `docker-compose.outbox.yml` — Postgres + Flyway migrations | ⏳ Not started |
+| 3 | `JpaOrderRepository` behind the existing `OrderRepository` port | ⏳ Not started |
+| 4 | `Order.confirm()` state transition + domain event | ⏳ Not started |
+| 5 | Outbox write in same TX + ArchUnit rule | ⏳ Not started |
+| 6 | First Testcontainers integration test | ⏳ Not started |
+| 7 | Debezium + Kafka Connect + Outbox Event Router SMT | ⏳ Not started |
+| 8 | Redelivery idempotency + kill-mid-request verification | ⏳ Not started |
+| 9 | Outbox retention purge job (see D2) | ⏳ Not started |
 
 ## Decisions & trade-offs
 <!-- design decisions as they're made, with alternatives considered -->
